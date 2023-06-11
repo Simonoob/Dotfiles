@@ -1,9 +1,10 @@
 -- TELESCOPE
 lvim.builtin.which_key.mappings["f"] = {
   name = "find",
-  f = { "<cmd>telescope find_files<cr>", "files" },
-  b = { "<cmd>telescope buffers<cr>", "buffers" },
-  w = { "<cmd>telescope live_grep<cr>", "grep" },
+  f = { "<cmd>Telescope find_files<cr>", "files" },
+  b = { "<cmd>Telescope buffers<cr>", "buffers" },
+  w = { "<cmd>Telescope live_grep<cr>", "grep" },
+  h = { "<cmd>Telescope oldfiles<cr>", "grep" },
 }
 
 -- BUFFERS
