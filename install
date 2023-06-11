@@ -19,4 +19,8 @@ echo 'SimLink created: Tmux scripts'
 
 rm -rf $HOME/.config/nvim
 ln -s $DOTFILES/nvim $HOME/.config/nvim
-echo 'SimLink created: Kitty'
+echo 'SimLink created: Nvim'
+
+rm -rf $HOME/.config/lvim
+ln -s $DOTFILES/lvim $HOME/.config/lvim
+echo 'SimLink created: Lvim'
