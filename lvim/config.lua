@@ -1,3 +1,5 @@
 reload("user/options")
+reload("user/lspconfig")
+reload("user/autocmds")
 reload("user/plugins/builtin/init")
 reload("user/plugins/custom/init")

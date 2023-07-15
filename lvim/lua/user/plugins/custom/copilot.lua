@@ -10,7 +10,7 @@ require("copilot").setup({
     --   open = "<M-CR>"
     -- },
     layout = {
-      position = "bottom",       -- | top | left | right
+      position = "bottom", -- | top | left | right
       ratio = 0.4
     },
   },
@@ -35,8 +35,8 @@ require("copilot").setup({
     hgcommit = false,
     svn = false,
     cvs = false,
-    ["."] = false,
+    ["."] = true,
   },
-  copilot_node_command = 'node',       -- Node.js version must be > 16.x
+  copilot_node_command = 'node', -- Node.js version must be > 16.x
   server_opts_overrides = {},
 })
