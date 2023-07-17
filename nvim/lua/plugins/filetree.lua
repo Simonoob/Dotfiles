@@ -22,9 +22,12 @@ return {
 			view = { width = 30 },
 			renderer = { group_empty = true },
 			filters = { dotfiles = true },
-
 			on_attach = on_attach,
 		})
-		vim.keymap.set("n", "<leader>e", api.tree.toggle, { desc = "[E]xpore file tree" })
+
+		vim.keymap.set("n", "<leader>e", function()
+			local currentFilePath = vim.fn.expand("%:p") -- might be empty
+			api.tree.toggle({ find_file = true, focus = true, path = currentFilePath, update_root = false })
+		end, { desc = "[E]xpore file tree" })
 	end,
 }
