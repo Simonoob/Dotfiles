@@ -17,6 +17,8 @@ require("telescopeSetup")
 
 require("treesitterSetup")
 
+require("neodevSetup")
+
 require("lspSetup")
 
 require("autoCompleteSetup")
