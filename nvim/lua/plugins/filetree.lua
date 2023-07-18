@@ -19,7 +19,7 @@ return {
 		local api = require("nvim-tree.api")
 		require("nvim-tree").setup({
 			sort_by = "case_sensitive",
-			view = { width = 30 },
+			view = { width = 45 },
 			renderer = { group_empty = true },
 			filters = { dotfiles = true },
 			on_attach = on_attach,
