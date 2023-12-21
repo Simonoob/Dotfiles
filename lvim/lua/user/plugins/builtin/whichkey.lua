@@ -12,7 +12,7 @@ lvim.builtin.which_key.mappings["f"] = {
 }
 lvim.builtin.which_key.mappings["s"] = {
   lvim.builtin.which_key.mappings['s'],
-  r = { "%:s/foo/bar/gc", "replace" }
+  r = { ":%s/foo/bar/gc", "replace" }
 }
 
 -- BUFFERS

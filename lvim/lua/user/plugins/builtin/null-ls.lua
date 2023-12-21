@@ -13,13 +13,13 @@ formatters.setup {
     -- these cannot contain whitespace
     -- options such as `--line-width 80` become either `{"--line-width", "80"}` or `{"--line-width=80"}`
   },
-  {
-    command = "blade_formatter",
-    filetypes = { "blade" },
-  },
-  {
-    command = "phpcsfixer",
-  }
+  -- {
+  --   command = "blade_formatter",
+  --   filetypes = { "blade" },
+  -- },
+  -- {
+  --   command = "phpcsfixer",
+  -- }
 }
 
 -- LINTING
@@ -30,9 +30,9 @@ linters.setup {
     command = "eslint_d",
     ---@usage specify which filetypes to enable. by default a providers will attach to all the filetypes it supports.
   },
-  {
-    command = "phpcs",
-  }
+  -- {
+  --   command = "phpcs",
+  -- }
 }
 -- CODE ACTIONS
 local codeActions = require "lua.lvim.lsp.null-ls.code_actio"
@@ -45,7 +45,7 @@ codeActions.setup {
 -- COMMANDS
 lvim.builtin.which_key.mappings["l"]["f"] = {
   function()
-    vim.lsp.format { timeout = 2000 }
+    vim.lsp.format { timeout = 500 }
   end,
   "LSP format",
 }
