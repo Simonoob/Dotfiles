@@ -1,12 +1,12 @@
 lvim.plugins = {
-  {
-    'zbirenbaum/copilot.lua',
-    cmd = "Copilot",
-    event = "InsertEnter",
-    config = function()
-      require("user/plugins/custom/copilot")
-    end,
-  },
+  -- {
+  --   'zbirenbaum/copilot.lua',
+  --   cmd = "Copilot",
+  --   event = "InsertEnter",
+  --   config = function()
+  --     require("user/plugins/custom/copilot")
+  --   end,
+  -- },
   {
     'windwp/nvim-ts-autotag',
     init = function()
@@ -39,11 +39,36 @@ lvim.plugins = {
   --     vim.cmd("TwilightEnable") -- enable it by default
   --   end,
   -- }
-  {
-    "m4xshen/hardtime.nvim",
-    init = function()
-      require("hardtime").setup()
-    end,
-  },
+  -- {
+  --   "m4xshen/hardtime.nvim",
+  --   init = function()
+  --     require("hardtime").setup()
+  --   end,
+  -- },
   { "jwalton512/vim-blade" },
+  {
+    "nvim-telescope/telescope.nvim",
+    dependencies = {
+      {
+        "nvim-telescope/telescope-live-grep-args.nvim",
+        -- This will not install any breaking changes.
+        -- For major updates, this must be adjusted manually.
+        version = "^1.0.0",
+      },
+    },
+    init = function()
+      require("telescope").load_extension("live_grep_args")
+    end
+  },
+  {
+    'joechrisellis/lsp-format-modifications.nvim',
+  },
+  -- cody
+  {
+    "sourcegraph/sg.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", --[[ "nvim-telescope/telescope.nvim ]] },
+    init = function()
+      require("sg").setup()
+    end
+  },
 }

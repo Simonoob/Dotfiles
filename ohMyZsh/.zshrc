@@ -73,6 +73,7 @@ ZSH_THEME="spaceship"
 plugins=(
 	git
 	zsh-syntax-highlighting
+  asdf
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -102,8 +103,20 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+# alias python="python3"
+alias lvim="~/.local/bin/lvim"
+
+alias stop-local-postgres='sudo -u postgres /Library/PostgreSQL/16/bin/pg_ctl -D /Library/PostgreSQL/16/data stop'
 
 
 export PATH=$HOME/bin:/usr/local/bin:$PATH #add bin folder to PATH
 
-eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) #homebrew
+# eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) #homebrew
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
