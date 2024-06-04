@@ -109,6 +109,10 @@ alias lvim="~/.local/bin/lvim"
 alias stop-local-postgres='sudo -u postgres /Library/PostgreSQL/16/bin/pg_ctl -D /Library/PostgreSQL/16/data stop'
 
 
+# Mamma script aliases
+alias mamma-script/comparison-new-prices-sync='npm run script:convertNewPricesSheetsToTs -- --sheets ~/Downloads/comparison-to-new-prices/iPhones\ sold\ by\ Apple\ \(Oct_2023\)\ -\ Data\ *'
+
+
 export PATH=$HOME/bin:/usr/local/bin:$PATH #add bin folder to PATH
 
 # eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) #homebrew
@@ -120,3 +124,9 @@ if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Us
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
