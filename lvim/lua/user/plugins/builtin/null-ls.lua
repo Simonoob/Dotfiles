@@ -20,6 +20,9 @@ formatters.setup {
   -- {
   --   command = "phpcsfixer",
   -- }
+  {
+    command = "ruff",
+  },
 }
 
 -- LINTING
@@ -33,12 +36,18 @@ linters.setup {
   -- {
   --   command = "phpcs",
   -- }
+  {
+    command = "ruff",
+  },
 }
 -- CODE ACTIONS
-local codeActions = require "lua.lvim.lsp.null-ls.code_actio"
+local codeActions = require "lua.lvim.lsp.null-ls.code_actions"
 codeActions.setup {
   {
     command = "eslint_d",
+  },
+  {
+    command = "ruff",
   },
 }
 
@@ -51,9 +60,8 @@ lvim.builtin.which_key.mappings["l"]["f"] = {
 }
 
 lvim.lsp.null_ls.setup.on_attach = function(client, bufnr)
-  print('maramaremaomdo afajdfp ajdfoaidfpiajp fiodjfaisjfd aj f')
   local lsp_format_modifications = require "lsp-format-modifications"
-  lsp_format_modifications.attach(client, bufnr, { format_on_save = false })
+  lsp_format_modifications.attach(client, bufnr, { format_on_save = true })
 end
 
 print(lvim.lsp.null_ls.setup)
