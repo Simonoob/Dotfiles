@@ -19,6 +19,7 @@ return {
         visible = true,
       },
       window = {
+        position = 'current',
         mappings = {
           ['\\'] = 'close_window',
         },
