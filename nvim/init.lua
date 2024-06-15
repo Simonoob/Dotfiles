@@ -291,6 +291,7 @@ require('lazy').setup({
         ['<leader>gb'] = { name = '[B]uffer', _ = 'which_key_ignore' },
         ['<leader>gd'] = { name = '[D]iff', _ = 'which_key_ignore' },
         ['<leader>gt'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+        ['<leader>gg'] = { name = '[G]itHub', _ = 'which_key_ignore' },
 
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
         ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
