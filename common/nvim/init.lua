@@ -860,7 +860,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = 'all',
+      ensure_installed = '',
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {

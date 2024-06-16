@@ -6,7 +6,6 @@ return {
     'OpenInGHFileLines',
   },
   init = function()
-    print 'going through the config function'
     -- for repository page
     vim.keymap.set('n', '<Leader>ggor', ':OpenInGHRepo <CR>', { desc = 'Open [R]epo' })
 
