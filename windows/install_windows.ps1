@@ -81,4 +81,5 @@ Write-Host -ForegroundColor Black -BackgroundColor White 'if you get ""Failed to
 Write-Host -ForegroundColor Black -BackgroundColor White 'git config --global --unset https.proxy'
 Write-Host -ForegroundColor Black -BackgroundColor White 'ipconfig /renew'
 Write-Host -ForegroundColor Black -BackgroundColor White 'or visit: https://docs.github.com/en/authentication/troubleshooting-ssh/using-ssh-over-the-https-port'
+Write-Host -ForegroundColor Black -BackgroundColor White 'if non of the above work, it is a network problem. Try changing network or as a last resort switch to https over ssh: git config --global url."https://github.com/".insteadOf git@github.com:'
 #--------
