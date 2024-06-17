@@ -575,6 +575,9 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      -- setup lsp for godot using the editor as lsp
+      require('lspconfig').gdscript.setup(capabilities)
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -870,7 +873,7 @@ require('lazy').setup({
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      indent = { enable = false },
     },
     config = function(_, opts)
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -932,6 +935,16 @@ require('lazy').setup({
     },
   },
 })
+
+-- listen to godot editor - not plugin specific but needed for integration with the editor when opening a script there
+local godot_root_patterns = { 'project.godot' }
+local godot_root_dir = vim.fs.dirname(vim.fs.find(godot_root_patterns, { upward = true })[1])
+
+if godot_root_dir then
+  print 'starting godot server'
+  local pipe = [[\\.\pipe\godot.pipe]]
+  vim.api.nvim_command([[echo serverstart(']] .. pipe .. [[')]])
+end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
