@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+#run the following to start the script
+#bash ./install_mac_os.sh
 bold=$(tput bold)
 normal=$(tput sgr0)
 
