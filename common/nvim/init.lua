@@ -281,9 +281,7 @@ require('lazy').setup({
 
       -- Document existing key chains
       require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
 
         ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
@@ -425,6 +423,20 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      -- Fuzzy find all the symbols in your current document.
+      --  Symbols are things like variables, functions, types, etc.
+
+      require('which-key').register {
+        ['<leader>sD'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+      }
+      vim.keymap.set('n', '<leader>sDs', require('telescope.builtin').lsp_document_symbols, { desc = '[S]ymbols' })
+
+      -- Fuzzy find all the symbols in your current workspace.
+      --  Similar to document symbols, except searches over your entire project.
+      require('which-key').register {
+        ['<leader>sW'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+      }
+      vim.keymap.set('n', '<leader>sWs', require('telescope.builtin').lsp_dynamic_workspace_symbols, { desc = '[S]ymbols' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>sc', function()
@@ -526,34 +538,37 @@ require('lazy').setup({
           --  Useful when your language has ways of declaring types without an actual implementation.
           map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
 
+          -- WARN: This is not Goto Definition, this is Goto Declaration.
+          --  For example, in C this would take you to the header.
+          map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
           map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
 
-          -- Fuzzy find all the symbols in your current document.
-          --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-
-          -- Fuzzy find all the symbols in your current workspace.
-          --  Similar to document symbols, except searches over your entire project.
-          map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-
-          -- Rename the variable under your cursor.
-          --  Most Language Servers support renaming across files, etc.
-          map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-
-          -- Execute a code action, usually your cursor needs to be on top of an error
-          -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap.
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
 
-          -- WARN: This is not Goto Definition, this is Goto Declaration.
-          --  For example, in C this would take you to the header.
-          map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+          -- LSP commands
+          require('which-key').register {
+            ['<leader>l'] = { name = '[L]SP', _ = 'which_key_ignore' },
+          }
+          require('which-key').register {
+            ['<leader>lc'] = { name = '[C]onfig', _ = 'which_key_ignore' },
+          }
+          map('<leader>lcr', function()
+            vim.cmd 'LspRestart'
+          end, '[R]estart')
+
+          -- Rename the variable under your cursor.
+          --  Most Language Servers support renaming across files, etc.
+          map('<leader>lr', vim.lsp.buf.rename, '[R]ename')
+
+          -- Execute a code action, usually your cursor needs to be on top of an error
+          -- or a suggestion from your LSP for this to activate.
+          map('<leader>la', vim.lsp.buf.code_action, 'code [A]ction')
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
