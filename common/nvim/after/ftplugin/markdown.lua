@@ -58,7 +58,9 @@ vim.keymap.set('n', '<leader>mt', function()
   local line_num = vim.api.nvim_win_get_cursor(0)[1]
   vim.api.nvim_win_set_cursor(0, { line_num, 0 })
   write_below_cursor '| fill_heading | fill_heading | fill_heading |'
+  vim.cmd ':normal j'
   write_below_cursor '|--------|--------|--------|'
+  vim.cmd ':normal j'
   write_below_cursor '| fill_cell | fill_cell | fill_cell |'
   vim.cmd [[/fill\w*]]
 end, { desc = '[T]able' })
