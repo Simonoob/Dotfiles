@@ -376,6 +376,7 @@ require('lazy').setup({
           layout_config = {
             width = 0.95,
             height = 0.95,
+            preview_width = 0.35,
           },
         },
         extensions = {

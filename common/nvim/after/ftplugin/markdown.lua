@@ -19,9 +19,7 @@ local function write_above_cursor(text, new_line)
     local nline = prev_line:sub(0, column_pos) .. text .. prev_line:sub(column_pos + 1)
     vim.api.nvim_set_current_line(nline)
   end
-  vim.api.nvim_win_set_cursor(0, { line_num, column_pos })
 end
--- END UTILS --------------------------
 
 local function write_below_cursor(text, new_line)
   new_line = new_line or true
@@ -36,8 +34,8 @@ local function write_below_cursor(text, new_line)
     local nline = next_line:sub(0, column_pos) .. text .. next_line:sub(column_pos + 1)
     vim.api.nvim_set_current_line(nline)
   end
-  vim.api.nvim_win_set_cursor(0, { line_num + 1, column_pos })
 end
+-- END UTILS --------------------------
 
 require('which-key').register {
   ['<leader>m'] = { name = '[M]arkdown', _ = 'which_key_ignore' },
@@ -68,13 +66,35 @@ end, { desc = '[T]able' })
 require('which-key').register {
   ['<leader>ma'] = { name = '[A]rrow', _ = 'which_key_ignore' },
 }
-vim.keymap.set('n', '<leader>mal', 'a  -->  <Esc>', { desc = '[L] Right' })
-vim.keymap.set('n', '<leader>mah', 'i  <--  <Esc>b2h', { desc = '[H] Left' })
+vim.keymap.set('n', '<leader>mal', 'a  →  <Esc>', { desc = '[L] Right' })
+vim.keymap.set('n', '<leader>mah', 'i  ←  <Esc>b2h', { desc = '[H] Left' })
 vim.keymap.set('n', '<leader>mak', function()
-  write_above_cursor '|'
-  write_above_cursor '^'
+  write_above_cursor '↑'
+  vim.cmd ':normal kO'
 end, { desc = '[K] Up' })
 vim.keymap.set('n', '<leader>maj', function()
-  write_below_cursor '|'
-  write_below_cursor 'v'
+  write_below_cursor '↓'
+  vim.cmd ':normal jo'
 end, { desc = '[J] Down' })
+
+vim.keymap.set('n', '<leader>ml', function()
+  local actions_state = require 'telescope.actions.state'
+  local actions = require 'telescope.actions'
+
+  local link_selected_file = function(prompt_bufnr)
+    local selected_entry_filename = actions_state.get_selected_entry()[1]:match '[^/]*.$'
+    actions.close(prompt_bufnr)
+    write_at_cursor('[[' .. selected_entry_filename .. '|fill display name' .. ']]')
+    vim.cmd ':normal f|lvt]'
+  end
+
+  require('telescope.builtin').find_files {
+    layout_strategy = 'horizontal',
+    cwd = '~/obsidian-git/',
+    attach_mappings = function(_, map)
+      map('n', '<cr>', link_selected_file)
+      map('i', '<cr>', link_selected_file)
+      return true
+    end,
+  }
+end, { desc = '[L]ink' })
