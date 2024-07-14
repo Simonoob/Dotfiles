@@ -62,7 +62,7 @@ vim.keymap.set('n', '<leader>mt', function()
   write_below_cursor '|--------|--------|--------|'
   vim.cmd ':normal j'
   write_below_cursor '| fill_cell | fill_cell | fill_cell |'
-  vim.cmd [[/fill\w*]]
+  vim.cmd [[/fill_\w*]]
 end, { desc = '[T]able' })
 
 require('which-key').register {
@@ -79,24 +79,28 @@ vim.keymap.set('n', '<leader>maj', function()
   vim.cmd ':normal jo'
 end, { desc = '[J] Down' })
 
-vim.keymap.set('n', '<leader>ml', function()
-  local actions_state = require 'telescope.actions.state'
-  local actions = require 'telescope.actions'
-
-  local link_selected_file = function(prompt_bufnr)
-    local selected_entry_filename = actions_state.get_selected_entry()[1]:match '[^/]*.$'
-    actions.close(prompt_bufnr)
-    write_at_cursor('[[' .. selected_entry_filename .. '|fill display name' .. ']]')
-    vim.cmd ':normal f|lvt]'
-  end
-
-  require('telescope.builtin').find_files {
-    layout_strategy = 'horizontal',
-    cwd = '~/obsidian-git/',
-    attach_mappings = function(_, map)
-      map('n', '<cr>', link_selected_file)
-      map('i', '<cr>', link_selected_file)
-      return true
-    end,
-  }
-end, { desc = '[L]ink' })
+-- require('which-key').register {
+--   ['<leader>ml'] = { name = '[L]ink', _ = 'which_key_ignore' },
+-- }
+--
+-- vim.keymap.set('n', '<leader>mln', function()
+--   local actions_state = require 'telescope.actions.state'
+--   local actions = require 'telescope.actions'
+--
+--   local link_selected_file = function(prompt_bufnr)
+--     local selected_entry_filename = actions_state.get_selected_entry()[1]:match '[^/]*.$'
+--     actions.close(prompt_bufnr)
+--     write_at_cursor('[[' .. selected_entry_filename .. '|fill display name' .. ']]')
+--     vim.cmd ':normal f|lvt]'
+--   end
+--
+--   require('telescope.builtin').find_files {
+--     layout_strategy = 'horizontal',
+--     cwd = '~/obsidian-git/',
+--     attach_mappings = function(_, map)
+--       map('n', '<cr>', link_selected_file)
+--       map('i', '<cr>', link_selected_file)
+--       return true
+--     end,
+--   }
+-- end, { desc = '[N]ew' })
