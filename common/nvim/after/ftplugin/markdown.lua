@@ -1,3 +1,7 @@
+-- needed for obsidian.nvim
+-- https://github.com/epwalsh/obsidian.nvim/issues/286#issuecomment-1877391540
+vim.opt_local.conceallevel = 1
+
 -- UTILS --------------------------
 local function write_at_cursor(text)
   local column_pos = vim.api.nvim_win_get_cursor(0)[2]
@@ -52,7 +56,10 @@ vim.keymap.set('n', '<leader>mh4', '4i#<Esc>i', { desc = '[4]' })
 vim.keymap.set('n', '<leader>mi', '2i*<Esc>i', { desc = '[I]talic' })
 vim.keymap.set('n', '<leader>mb', '4i*<Esc>2<Left>a', { desc = '[B]old' })
 
-vim.keymap.set('n', '<leader>mc', 'o- [ ] ', { desc = '[C]heckbox' })
+require('which-key').register {
+  ['<leader>mh'] = { name = '[C]heckbox', _ = 'which_key_ignore' },
+}
+vim.keymap.set('n', '<leader>mcn', 'o- [ ] ', { desc = '[N]ew' })
 
 vim.keymap.set('n', '<leader>mt', function()
   local line_num = vim.api.nvim_win_get_cursor(0)[1]

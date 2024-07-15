@@ -917,7 +917,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = '',
+      ensure_installed = { 'markdown', 'markdown_inline' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -999,18 +999,6 @@ if godot_root_dir then
   local pipe = [[\\.\pipe\godot.pipe]]
   vim.api.nvim_command([[echo serverstart(']] .. pipe .. [[')]])
 end
-
--- open obsidian notes
-require('which-key').register {
-  ['<leader>n'] = { name = '[N]otes', _ = 'which_key_ignore' },
-}
-
-vim.keymap.set('n', '<leader>no', function()
-  require('telescope.builtin').find_files {
-    layout_strategy = 'horizontal',
-    cwd = '~/obsidian-git/',
-  }
-end, { desc = '[O]pen' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
