@@ -741,6 +741,7 @@ require('lazy').setup({
         python = { 'isort', 'black' },
         javascript = { { 'prettierd', 'prettier' } },
         typescript = { { 'prettierd', 'prettier' } },
+        javascriptreact = { { 'prettierd', 'prettier' } },
         typescriptreact = { { 'prettierd', 'prettier' } },
       },
       -- Set up format-on-save
