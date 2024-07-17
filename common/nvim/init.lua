@@ -361,6 +361,22 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+
+      -- wrap preview lines
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'TelescopePreviewerLoaded',
+        ---@diagnostic disable-next-line: unused-local
+        callback = function(args)
+          vim.wo.wrap = true
+        end,
+      })
+
+      -- custom copy of "Horizontal" layout
+      require('telescope.pickers.layout_strategies').horizontal_custom = function(picker, max_columns, max_lines, layout_config)
+        local layout =
+          require('telescope.pickers.layout_strategies').horizontal(picker, max_columns, max_lines, { unpack(layout_config or {}), preview_width = 0.35 }) --change default args
+        return layout
+      end
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -372,11 +388,10 @@ require('lazy').setup({
         -- },
         -- pickers = {}
         defaults = {
-          layout_strategy = 'horizontal',
+          layout_strategy = 'horizontal_custom',
           layout_config = {
             width = 0.95,
             height = 0.95,
-            preview_width = 0.35,
           },
         },
         extensions = {
