@@ -389,7 +389,7 @@ require('lazy').setup({
         -- pickers = {}
         defaults = {
           layout_strategy = 'horizontal_custom',
-          layout_config = {
+          layout_config = { -- these are passed to all layout_strategy functions
             width = 0.95,
             height = 0.95,
           },
