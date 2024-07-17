@@ -393,6 +393,7 @@ require('lazy').setup({
             width = 0.95,
             height = 0.95,
           },
+          path_display = { 'smart' }, --how to handle filenames in the result view
         },
         extensions = {
           ['ui-select'] = {
