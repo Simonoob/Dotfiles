@@ -24,8 +24,8 @@ return {
     require('which-key').register {
       ['<leader>.l'] = { name = '[L]aravel', _ = 'which_key_ignore' },
     }
-    vim.keymap.set('n', '<leared>.la', ':Laravel artisan<CR>', { desc = '[A]rtisan' })
-    vim.keymap.set('n', '<leared>.lr', ':Laravel routes<CR>', { desc = '[R]outes' })
-    vim.keymap.set('n', '<leared>.lm', ':Laravel related<CR>', { desc = '[M] related' })
+    vim.keymap.set('n', '<leader>.la', ':Laravel artisan<CR>', { desc = '[A]rtisan' })
+    vim.keymap.set('n', '<leader>.lr', ':Laravel routes<CR>', { desc = '[R]outes' })
+    vim.keymap.set('n', '<leader>.lm', ':Laravel related<CR>', { desc = '[M] related' })
   end,
 }
