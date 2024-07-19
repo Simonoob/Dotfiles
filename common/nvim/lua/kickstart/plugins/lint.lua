@@ -19,7 +19,7 @@ return {
       lint.linters_by_ft['javascriptreact'] = { 'eslint_d', 'eslint' }
       lint.linters_by_ft['typescriptreact'] = { 'eslint_d', 'eslint' }
 
-      lint.linters_by_ft['php'] = { 'php-cs-fixer', 'pretty-php' }
+      lint.linters_by_ft['php'] = { 'phpcs' }
 
       --
       -- However, note that this will enable a set of default linters,
