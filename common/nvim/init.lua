@@ -597,6 +597,21 @@ require('lazy').setup({
           -- or a suggestion from your LSP for this to activate.
           map('<leader>la', vim.lsp.buf.code_action, 'code [A]ction')
 
+          map('<leader>lci', ':LspInfo<CR>', 'LSP [I]nfo')
+
+          map('<leader>lcf', ':ConformInfo<CR>', '[F]ormatters info')
+
+          map('<leader>lcl', function()
+            local linters = require('lint').get_running()
+            local text
+            text = table.concat(linters, ', ')
+            if text == '' then
+              text = 'no linters found'
+            end
+
+            print(text)
+          end, '[L]inters info')
+
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           --    See `:help CursorHold` for information about when this is executed
@@ -745,7 +760,7 @@ require('lazy').setup({
         javascriptreact = { { 'prettierd', 'prettier' } },
         typescriptreact = { { 'prettierd', 'prettier' } },
 
-        php = { 'php-cs-fixer' },
+        php = { { 'php_cs_fixer', 'pretty-php' } },
       },
       -- Set up format-on-save
       format_on_save = { timeout_ms = 500, lsp_fallback = true },
@@ -754,12 +769,19 @@ require('lazy').setup({
         shfmt = {
           prepend_args = { '-i', '2' },
         },
+        ['php_cs_fixer'] = {
+          args = {
+            'fix',
+            '--rules=@PSR12', -- Formatting preset. Other presets are available, see the php-cs-fixer docs.
+            '$FILENAME',
+          },
+        },
       },
+      init = function()
+        -- If you want the formatexpr, here is the place to set it
+        vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+      end,
     },
-    init = function()
-      -- If you want the formatexpr, here is the place to set it
-      vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
-    end,
   },
 
   { -- Autocompletion
@@ -1022,3 +1044,4 @@ end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
