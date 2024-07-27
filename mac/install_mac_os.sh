@@ -32,3 +32,8 @@ echo 'SimLink created: Oh My Zsh'
 echo "${bold}To install the spaceship promt for Oh My Zsh run the following commands:${normal}"
 echo 'git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1'
 echo 'ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme"'
+
+
+rm -rf $HOME/.hammerspoon
+ln -s $DOTFILES/mac/.hammerspoon $HOME/.hammerspoon
+echo 'SimLink created: Hammerspoon'
