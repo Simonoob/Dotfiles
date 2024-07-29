@@ -52,7 +52,7 @@ local function getNvimCommand(darkModeEnabled)
 	local serverAddressesString = hs.execute("/opt/homebrew/bin/nvr --serverlist")
 	local serverAddresses = split(serverAddressesString, "\n")
 	local commands = map(serverAddresses, function(serverAddress)
-		return '/opt/homebrew/bin/nvim --remote-send "<Esc>:set bg='
+		return '/opt/homebrew/bin/nvim --remote-send "<Esc><Esc>:set bg='
 			.. nvimBg
 			.. '<Enter>" --server "'
 			.. serverAddress
