@@ -2,10 +2,10 @@ return {
   "neovim/nvim-lspconfig",
   opts = {
     servers = {
-      intelephense = {
+      phpactor = {
         filetypes = { "php", "blade" },
         settings = {
-          intelephense = {
+          phpactor = {
             filetypes = { "php", "blade" },
             files = {
               associations = { "*.php", "*.blade.php" }, -- Associating .blade.php files as well
