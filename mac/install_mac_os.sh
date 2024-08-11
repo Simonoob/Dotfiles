@@ -7,8 +7,8 @@ normal=$(tput sgr0)
 
 if [[ "$OSTYPE" != "darwin"* ]]; then
 
-    echo 'Installation skipped: current platform is not Mac OSX'
-    exit 1
+  echo 'Installation skipped: current platform is not Mac OSX'
+  exit 1
 fi
 
 echo 'Platform: Mac OSX'
@@ -33,7 +33,10 @@ echo "${bold}To install the spaceship promt for Oh My Zsh run the following comm
 echo 'git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1'
 echo 'ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme"'
 
-
 rm -rf $HOME/.hammerspoon
 ln -s $DOTFILES/mac/.hammerspoon $HOME/.hammerspoon
 echo 'SimLink created: Hammerspoon'
+
+rm -rf $HOME/.aerospace.toml
+ln -s $DOTFILES/mac/.aerospace.toml $HOME/.aerospace.toml
+echo 'SimLink created: Aerospace window tiling manager'
