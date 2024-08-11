@@ -5,6 +5,10 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+# TODO: add brew install commands
+# TODO: check if each program is present before installing
+# TODO: check if each config is present before applying the config in the repo
+
 if [[ "$OSTYPE" != "darwin"* ]]; then
 
   echo 'Installation skipped: current platform is not Mac OSX'
