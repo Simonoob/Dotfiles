@@ -4,3 +4,6 @@
 
 -- LSP Server to use for PHP.
 vim.g.lazyvim_php_lsp = "phpactor"
+
+-- revert from updated default - if you don't have the `fzf`` executable installed locally
+vim.g.lazyvim_picker = "telescope"
