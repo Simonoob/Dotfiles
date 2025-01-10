@@ -7,3 +7,6 @@ vim.g.lazyvim_php_lsp = "phpactor"
 
 -- revert from updated default - if you don't have the `fzf`` executable installed locally
 vim.g.lazyvim_picker = "telescope"
+
+vim.g.lazyvim_ruby_lsp = "ruby_lsp"
+vim.g.lazyvim_ruby_formatter = "rubocop"
