@@ -125,31 +125,31 @@ if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Us
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
 
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
-
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
-
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
-
 
 # Herd injected NVM configuration
-export NVM_DIR="/Users/simonoob/Library/Application Support/Herd/config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-
-[[ -f "/Applications/Herd.app/Contents/Resources/config/shell/zshrc.zsh" ]] && builtin source "/Applications/Herd.app/Contents/Resources/config/shell/zshrc.zsh"
+# export NVM_DIR="/Users/simonoob/Library/Application Support/Herd/config/nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#
+# [[ -f "/Applications/Herd.app/Contents/Resources/config/shell/zshrc.zsh" ]] && builtin source "/Applications/Herd.app/Contents/Resources/config/shell/zshrc.zsh"
 
 # Herd injected PHP 8.3 configuration.
-export HERD_PHP_83_INI_SCAN_DIR="/Users/simonoob/Library/Application Support/Herd/config/php/83/"
+# export HERD_PHP_83_INI_SCAN_DIR="/Users/simonoob/Library/Application Support/Herd/config/php/83/"
 
  # ejson keydir
 export EJSON_KEYDIR=~/.ejson
 
 # Herd injected PHP binary.
-export PATH="/Users/simonoob/Library/Application Support/Herd/bin/":$PATH
+# export PATH="/Users/simonoob/Library/Application Support/Herd/bin/":$PATH
 
 
 # Herd injected PHP 8.4 configuration.
-export HERD_PHP_84_INI_SCAN_DIR="/Users/simonoob/Library/Application Support/Herd/config/php/84/"
+# export HERD_PHP_84_INI_SCAN_DIR="/Users/simonoob/Library/Application Support/Herd/config/php/84/"
 
 # Laravel sail command alias
-alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
+# alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
+# export PATH="/opt/homebrew/bin:$PATH"
+# export PATH="/opt/homebrew/bin:$PATH"
+# eval "$(~/.local/bin/mise activate)"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/simonoob/.lmstudio/bin"
