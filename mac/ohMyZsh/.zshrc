@@ -105,6 +105,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 # alias python="python3"
 alias lvim="~/.local/bin/lvim"
+alias nvim-test="~/.config/nvim-test"
 
 alias stop-local-postgres='sudo -u postgres /Library/PostgreSQL/16/bin/pg_ctl -D /Library/PostgreSQL/16/data stop'
 
