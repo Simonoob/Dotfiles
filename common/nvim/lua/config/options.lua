@@ -1,5 +1,3 @@
-print("from options")
-
 -- Space as <Leader>.
 vim.g.mapleader = " "
 -- Space as <LocalLeader>.
