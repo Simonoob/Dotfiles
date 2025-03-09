@@ -58,6 +58,6 @@ opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.winminwidth = 5 -- Minimum window width
 opt.wrap = false -- Disable line wrap
 opt.smoothscroll = true
-opt.foldexpr = "v:lua.require'lazyvim.util'.ui.foldexpr()"
+opt.foldexpr = "nvim_treesitter#foldexpr()" -- Use treesitter for folding
 opt.foldmethod = "expr"
 opt.foldtext = ""

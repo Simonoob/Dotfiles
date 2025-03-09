@@ -14,12 +14,12 @@ return {
           Error = " ",
           Warn = " ",
           Hint = " ",
-          Info = " "
-        }
+          Info = " ",
+        },
       }
 
       -- Configure diagnostics
-      vim.diagnostic.config({
+      vim.diagnostic.config {
         underline = true,
         update_in_insert = false,
         virtual_text = {
@@ -36,10 +36,10 @@ return {
             [vim.diagnostic.severity.INFO] = icons.diagnostics.Info,
           },
         },
-      })
+      }
 
       -- Configure diagnostics signs for Neovim < 0.10.0
-      if vim.fn.has("nvim-0.10.0") == 0 then
+      if vim.fn.has "nvim-0.10.0" == 0 then
         for severity, icon in pairs(icons.diagnostics) do
           local name = vim.diagnostic.severity[severity]:lower():gsub("^%l", string.upper)
           name = "DiagnosticSign" .. name
@@ -62,8 +62,10 @@ return {
         map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
         map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
         map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
-        map("n", "<leader>cr", vim.lsp.buf.rename, "Rename")
-        map("n", "<leader>cf", function() vim.lsp.buf.format({ async = true }) end, "Format Document")
+        map("n", "<leader>cR", vim.lsp.buf.rename, "Rename")
+        map("n", "<leader>cf", function()
+          vim.lsp.buf.format { async = true }
+        end, "Format Document")
 
         -- Diagnostics
         map("n", "<leader>cd", vim.diagnostic.open_float, "Line Diagnostics")
@@ -72,7 +74,7 @@ return {
         map("n", "<leader>cq", vim.diagnostic.setloclist, "Diagnostics List")
 
         -- CodeLens (Neovim >= 0.10.0)
-        if vim.fn.has("nvim-0.10") == 1 and client.server_capabilities.codeLensProvider then
+        if vim.fn.has "nvim-0.10" == 1 and client.server_capabilities.codeLensProvider then
           map("n", "<leader>cl", vim.lsp.codelens.run, "Run CodeLens")
           vim.lsp.codelens.refresh()
           vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
@@ -82,11 +84,13 @@ return {
         end
 
         -- Inlay hints (Neovim >= 0.10.0)
-        if vim.fn.has("nvim-0.10") == 1 and client.server_capabilities.inlayHintProvider then
+        if vim.fn.has "nvim-0.10" == 1 and client.server_capabilities.inlayHintProvider then
           local ft = vim.bo[bufnr].filetype
-          if vim.api.nvim_buf_is_valid(bufnr) and
-              vim.bo[bufnr].buftype == "" and
-              not vim.tbl_contains({ "vue" }, ft) then
+          if
+            vim.api.nvim_buf_is_valid(bufnr)
+            and vim.bo[bufnr].buftype == ""
+            and not vim.tbl_contains({ "vue" }, ft)
+          then
             vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
           end
         end
@@ -141,18 +145,18 @@ return {
       }
 
       -- Configure lspconfig with mason-lspconfig
-      local mason_lspconfig = require("mason-lspconfig")
+      local mason_lspconfig = require "mason-lspconfig"
 
-      mason_lspconfig.setup({
+      mason_lspconfig.setup {
         ensure_installed = {
           "lua_ls",
           -- Add other servers to install here
           "eslint",
           "vtsls",
         },
-      })
+      }
 
-      mason_lspconfig.setup_handlers({
+      mason_lspconfig.setup_handlers {
         function(server_name)
           local server_opts = vim.tbl_deep_extend("force", {
             capabilities = capabilities,
@@ -161,7 +165,7 @@ return {
 
           require("lspconfig")[server_name].setup(server_opts)
         end,
-      })
+      }
     end,
   },
 
@@ -179,7 +183,7 @@ return {
     },
     config = function(_, opts)
       require("mason").setup(opts)
-      local mr = require("mason-registry")
+      local mr = require "mason-registry"
 
       -- Install configured tools
       mr.refresh(function()
