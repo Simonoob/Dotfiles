@@ -55,9 +55,7 @@ return {
 		keys = {
 			-- Quick access
 			{ "<leader>,", "<cmd>Telescope buffers sort_mru=true sort_lastused=true<cr>", desc = "Switch Buffer" },
-			{ "<leader>/", "<cmd>Telescope live_grep<cr>", desc = "Grep (Root Dir)" },
 			{ "<leader>:", "<cmd>Telescope command_history<cr>", desc = "Command History" },
-			{ "<leader><space>", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
 
 			-- Files
 			{
@@ -71,7 +69,7 @@ return {
 				"<cmd>lua require('telescope.builtin').find_files({ cwd = vim.fn.getcwd() })<cr>",
 				desc = "Find Files (cwd)",
 			},
-			-- Hidden files only
+			-- Hidden and ignored files only
 			{
 				"<leader>fh",
 				function()
@@ -81,31 +79,23 @@ return {
 							"--type",
 							"f",
 							"--hidden",
-							"--exclude",
-							".git",
 							"--no-ignore-vcs",
-							"false",
 						},
 						prompt_title = "Find Hidden Files Only",
 					})
 				end,
 				desc = "Find Hidden Files Only",
 			},
-			-- Ignored files only
-			{
-				"<leader>fi",
-				function()
-					require("telescope.builtin").find_files({
-						find_command = { "fd", "--type", "f", "--no-ignore", "--hidden", "false" },
-						prompt_title = "Find Ignored Files Only",
-					})
-				end,
-				desc = "Find Ignored Files Only",
-			},
 			-- All files (hidden + ignored + normal)
 			{
 				"<leader>fa",
-				"<cmd>lua require('telescope.builtin').find_files({ hidden = true, no_ignore = true, prompt_title = 'Find All Files' })<cr>",
+				function()
+					require("telescope.builtin").find_files({
+						hidden = true,
+						no_ignore = true,
+						prompt_title = "Find All Files",
+					})
+				end,
 				desc = "Find All Files",
 			},
 			{ "<leader>fg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
@@ -134,26 +124,13 @@ return {
 				"<cmd>lua require('telescope.builtin').live_grep({ cwd = vim.fn.getcwd() })<cr>",
 				desc = "Grep (cwd)",
 			},
-			-- Grep in ignored files only
-			{
-				"<leader>sgi",
-				function()
-					require("telescope.builtin").live_grep({
-						additional_args = function()
-							return { "--no-ignore", "--glob", "!.*" }
-						end,
-						prompt_title = "Grep (Ignored Files Only)",
-					})
-				end,
-				desc = "Grep (ignored files only)",
-			},
 			-- Grep in hidden files only
 			{
 				"<leader>sgh",
 				function()
 					require("telescope.builtin").live_grep({
 						additional_args = function()
-							return { "--hidden", "--glob", "!.git" }
+							return { "--hidden", "--no-ignore-vcs" }
 						end,
 						prompt_title = "Grep (Hidden Files Only)",
 					})
@@ -163,7 +140,13 @@ return {
 			-- Grep in all files
 			{
 				"<leader>sga",
-				"<cmd>lua require('telescope.builtin').live_grep({ hidden = true, no_ignore = true, prompt_title = 'Grep (All Files)' })<cr>",
+				function()
+					require("telescope.builtin").live_grep({
+						hidden = true,
+						no_ignore = true,
+						prompt_title = "Grep (All Files)",
+					})
+				end,
 				desc = "Grep (all files)",
 			},
 			{ "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "Help Pages" },
@@ -221,30 +204,18 @@ return {
 				return vim.cmd.Trouble("telescope")
 			end
 
-			-- Additional find_files actions
-			-- Find only ignored files
-			local find_files_no_ignore = function()
-				local action_state = require("telescope.actions.state")
-				local line = action_state.get_current_line()
-				require("telescope.builtin").find_files({
-					find_command = { "fd", "--type", "f", "--no-ignore", "--hidden", "false" },
-					prompt_title = "Find Ignored Files Only",
-					default_text = line,
-				})
-			end
-
-			-- Find only hidden files
+			-- Find hidden files handler
 			local find_files_with_hidden = function()
 				local action_state = require("telescope.actions.state")
 				local line = action_state.get_current_line()
 				require("telescope.builtin").find_files({
-					find_command = { "fd", "--type", "f", "--hidden", "--exclude", ".git", "--no-ignore-vcs", "false" },
+					find_command = { "fd", "--type", "f", "--hidden", "--no-ignore-vcs" },
 					prompt_title = "Find Hidden Files Only",
 					default_text = line,
 				})
 			end
 
-			-- Find all files
+			-- Find all files handler
 			local find_files_all = function()
 				local action_state = require("telescope.actions.state")
 				local line = action_state.get_current_line()
@@ -276,9 +247,8 @@ return {
 						i = {
 							["<c-t>"] = open_with_trouble,
 							["<a-t>"] = open_with_trouble,
-							["<a-i>"] = find_files_no_ignore,
 							["<a-h>"] = find_files_with_hidden,
-							["<a-a>"] = find_files_all, -- New mapping for all files
+							["<a-a>"] = find_files_all,
 							["<C-Down>"] = actions.cycle_history_next,
 							["<C-Up>"] = actions.cycle_history_prev,
 							["<C-f>"] = actions.preview_scrolling_down,
