@@ -5,7 +5,7 @@ return {
   event = "VeryLazy",
   opts_extend = { "spec" },
   opts = {
-    preset = "helix",
+    preset = "modern",
     defaults = {},
     spec = {
       {
