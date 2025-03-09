@@ -148,6 +148,7 @@ return {
           "lua_ls",
           -- Add other servers to install here
           "eslint",
+          "vtsls",
         },
       })
 

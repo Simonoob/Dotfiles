@@ -24,9 +24,8 @@ return {
 			{
 				"<leader>ct",
 				function()
-					if vim.b.disable_autoformat or vim.g.disable_autoformat then
+					if vim.b.disable_autoformat then
 						-- Enable format
-						vim.g.disable_autoformat = false
 						vim.b.disable_autoformat = false
 						vim.notify("Autoformat enabled", vim.log.levels.INFO)
 					else
@@ -40,8 +39,7 @@ return {
 			},
 		},
 		init = function()
-			-- Initialize autoformat flags
-			vim.g.disable_autoformat = false
+			-- Initialize autoformat flag
 
 			-- Create a Format command
 			vim.api.nvim_create_user_command("Format", function(args)
@@ -60,13 +58,12 @@ return {
 				group = vim.api.nvim_create_augroup("ConformFormatOnSave", { clear = true }),
 				callback = function(args)
 					-- Skip formatting if disabled
-					if vim.g.disable_autoformat or vim.b.disable_autoformat then
+					if vim.b.disable_autoformat then
 						return
 					end
-
 					require("conform").format({
 						bufnr = args.buf,
-						timeout_ms = 500,
+						async = false,
 						lsp_fallback = true,
 					})
 				end,
