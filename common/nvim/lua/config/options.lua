@@ -60,4 +60,5 @@ opt.wrap = false -- Disable line wrap
 opt.smoothscroll = true
 opt.foldexpr = "nvim_treesitter#foldexpr()" -- Use treesitter for folding
 opt.foldmethod = "expr"
-opt.foldtext = ""
+opt.foldlevel = 99
+opt.foldtext = "v:folddashes .. ' ' .. v:folddindent .. ' ' .. v:foldtext"
