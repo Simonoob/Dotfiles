@@ -30,9 +30,14 @@ return {
         desc = "Delete mark",
       },
       {
-        "<leader>mD",
+        "<leader>mb",
         require("marks").delete_buf,
         desc = "Delete all marks in buffer",
+      },
+      {
+        "<leader>mD",
+        "<cmd>delmarks A-Za-b0-9<cr>",
+        desc = "Delete all marks",
       },
       {
         "<leader>ml",
