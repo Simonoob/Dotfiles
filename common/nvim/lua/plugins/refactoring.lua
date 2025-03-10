@@ -50,7 +50,7 @@ return {
         desc = "Debug Print",
       },
       {
-        "<leader>rp",
+        "<leader>crp",
         function()
           require("refactoring").debug.print_var { normal = true }
         end,

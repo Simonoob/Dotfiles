@@ -40,7 +40,7 @@ return {
       function()
         require("oil").toggle_float()
       end,
-      desc = "Toggle Oil File Explorer",
+      desc = "Oil File Explorer",
     },
   },
   -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
