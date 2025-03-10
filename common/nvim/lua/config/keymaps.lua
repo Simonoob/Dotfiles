@@ -30,6 +30,9 @@ end, { expr = true, desc = "Escape and Clear hlsearch" })
 
 -- Clear search, diff update and redraw
 -- taken from runtime/lua/_editor.lua
+require("which-key").add {
+  { "<leader>u", group = "ui", icon = { icon = "󰙵 ", color = "cyan" }, mode = "n" },
+}
 map(
   "n",
   "<leader>ur",
@@ -91,8 +94,12 @@ end, { desc = "Git Blame Line" })
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
 
 -- folding
-map("n", "<leader>zA", "<cmd>set foldlevel=99<cr>", { desc = "Open All Folds" })
-map("n", "<leader>zC", "<cmd>set foldlevel=0<cr>", { desc = "Close All Folds" })
-map("n", "<leader>za", "za", { desc = "Toggle Fold" })
-map("n", "<leader>zo", "zo", { desc = "Open Fold" })
-map("n", "<leader>zc", "zc", { desc = "Close Fold" })
+require("which-key").add {
+  mode = { "n" },
+  { "<leader>z", group = "folds (treesitter)", icon = { icon = "", color = "green" } },
+  { "<leader>zA", "<cmd>set foldlevel=99<cr>", desc = "Open All Folds" },
+  { "<leader>zC", "<cmd>set foldlevel=0<cr>", desc = "Close All Folds" },
+  { "<leader>za", "za", desc = "Toggle Fold" },
+  { "<leader>zo", "zo", desc = "Open Fold" },
+  { "<leader>zc", "zc", desc = "Close Fold" },
+}
