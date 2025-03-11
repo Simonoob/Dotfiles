@@ -3,18 +3,51 @@ local formatting = { -- Autoformat
 	event = { "BufWritePre" },
 	cmd = { "ConformInfo" },
 	keys = {
+
 		{
-			"<leader>f",
+			"<leader>cF",
 			function()
-				require("conform").format({ async = true, lsp_format = "fallback" })
+				require("conform").format({ formatters = { "injected" }, timeout_ms = 3000 })
 			end,
-			mode = "",
-			desc = "[F]ormat buffer",
+			mode = { "n", "v" },
+			desc = "Format Injected Langs",
+		},
+		{
+			"<leader>cf",
+			function()
+				require("conform").format({ async = false, lsp_fallback = true })
+			end,
+			mode = "n",
+			desc = "Format Document",
+		},
+		{
+			"<leader>ct",
+			function()
+				if vim.b.disable_autoformat then
+					-- Enable format
+					vim.b.disable_autoformat = false
+					vim.notify("Autoformat enabled", vim.log.levels.INFO)
+				else
+					-- Disable format
+					vim.b.disable_autoformat = true
+					vim.notify("Autoformat disabled (buffer)", vim.log.levels.INFO)
+				end
+			end,
+			mode = "n",
+			desc = "Toggle Format on Save",
 		},
 	},
 	opts = {
-		notify_on_error = false,
+		notify_on_error = true,
+		default_format_opts = {
+			timeout = 2000,
+		},
 		format_on_save = function(bufnr)
+			-- Skip formatting if disabled
+			if vim.b.disable_autoformat then
+				return
+			end
+
 			-- Disable "format_on_save lsp_fallback" for languages that don't
 			-- have a well standardized coding style. You can add additional
 			-- languages here or re-enable it for the disabled ones.
@@ -25,8 +58,8 @@ local formatting = { -- Autoformat
 			else
 				lsp_format_opt = "fallback"
 			end
+
 			return {
-				timeout_ms = 500,
 				lsp_format = lsp_format_opt,
 			}
 		end,
@@ -36,7 +69,10 @@ local formatting = { -- Autoformat
 			-- python = { "isort", "black" },
 			--
 			-- You can use 'stop_after_first' to run the first available formatter from the list
-			-- javascript = { "prettierd", "prettier", stop_after_first = true },
+			javascript = { "prettierd", "prettier", stop_after_first = true },
+			typescript = { "prettierd", "prettier", stop_after_first = true },
+			javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+			typescriptreact = { "prettierd", "prettier", stop_after_first = true },
 		},
 	},
 }
