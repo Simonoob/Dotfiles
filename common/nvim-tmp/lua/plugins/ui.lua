@@ -1,24 +1,47 @@
-local colorscheme = { -- You can easily change to a different colorscheme.
-	-- Change the name of the colorscheme plugin below, and then
-	-- change the command in the config to whatever the name of that colorscheme is.
-	--
-	-- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-	"folke/tokyonight.nvim",
-	priority = 1000, -- Make sure to load this before all the other start plugins.
+local colorscheme = {
+	"ellisonleao/gruvbox.nvim",
+	lazy = false, -- make sure we load this during startup if it is your main colorscheme
+	priority = 1000, -- make sure to load this before all the other start plugins
 	config = function()
-		---@diagnostic disable-next-line: missing-fields
-		require("tokyonight").setup({
-			styles = {
-				comments = { italic = false }, -- Disable italics in comments
+		require("gruvbox").setup({
+			terminal_colors = true, -- add neovim terminal colors
+			undercurl = true,
+			underline = true,
+			bold = true,
+			italic = {
+				strings = true,
+				emphasis = true,
+				comments = true,
+				operators = false,
+				folds = true,
 			},
+			strikethrough = true, -- Enable strikethrough text
+
+			-- Background options
+			invert_selection = false, -- Don't invert selected text
+			invert_signs = false, -- Don't invert gutter signs
+			invert_tabline = false, -- Don't invert tabline
+			invert_intend_guides = false, -- Don't invert indent guides
+			inverse = true, -- Invert background for search, diffs, statuslines and errors
+
+			-- Can be "hard" (more contrast), "soft" (less contrast) or "" (default)
+			contrast = "",
+
+			-- Override specific color groups to use other groups or a hex color
+			palette_overrides = {}, -- Override specific colors in the palette
+			overrides = {}, -- Override highlight groups
+
+			-- Window options
+			dim_inactive = false, -- Don't dim inactive windows
+			transparent_mode = false, -- No transparency (set true if you use terminal transparency)
 		})
 
-		-- Load the colorscheme here.
-		-- Like many other themes, this one has different styles, and you could load
-		-- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-		vim.cmd.colorscheme("tokyonight-night")
+		-- Set colorscheme after options
+		-- Toggle between modes with ':set background=dark/light'
+		vim.cmd("colorscheme gruvbox")
 	end,
 }
+
 local indent_blank_lines = {
 	{ -- Add indentation guides even on blank lines
 		"lukas-reineke/indent-blankline.nvim",
