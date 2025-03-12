@@ -60,4 +60,71 @@ local highlight_comments = {
 	opts = { signs = false },
 }
 
-return { colorscheme, highlight_comments, indent_blank_lines }
+local show_marks = {
+	"chentoast/marks.nvim",
+	event = "VeryLazy",
+	opts = {
+		--  set_next               -- Set next available lowercase mark at cursor.
+		-- toggle                 -- Toggle next available mark at cursor.
+		-- delete_line            -- Deletes all marks on current line.
+		-- delete_buf             -- Deletes all marks in current buffer.
+		-- next                   -- Goes to next mark in buffer.
+		-- prev                   -- Goes to previous mark in buffer.
+		-- preview                -- Previews mark (will wait for user input). press <cr> to just preview the next mark.
+		-- set                    -- Sets a letter mark (will wait for input).
+		-- delete                 -- Delete a letter mark (will wait for input).
+		default_mappings = false,
+	},
+	config = function(_, opts)
+		require("marks").setup(opts)
+		-- keymaps
+		require("which-key").add({
+			mode = { "n" },
+			{ "<leader>m", group = "marks", icon = { icon = "󰀫", color = "yellow" } },
+			{
+				"<leader>md",
+				require("marks").delete_buf,
+				desc = "Delete local marks",
+			},
+			{
+				"<leader>mD",
+				"<cmd>delmarks A-Za-b0-9<cr>",
+				desc = "Delete all marks",
+			},
+			{
+				"<leader>ml",
+				require("marks").delete_line,
+				desc = "Delete marks on line",
+			},
+			{
+				"]m",
+				require("marks").next,
+				desc = "Next mark",
+			},
+			{
+				"[m",
+				require("marks").prev,
+				desc = "Previous mark",
+			},
+		})
+	end,
+}
+
+local selects_and_inputs = {
+	-- Better UI for vim.ui.select/input
+	"stevearc/dressing.nvim",
+	lazy = true,
+	init = function()
+		---@diagnostic disable-next-line: duplicate-set-field
+		vim.ui.select = function(...)
+			require("lazy").load({ plugins = { "dressing.nvim" } })
+			return vim.ui.select(...)
+		end
+		---@diagnostic disable-next-line: duplicate-set-field
+		vim.ui.input = function(...)
+			require("lazy").load({ plugins = { "dressing.nvim" } })
+			return vim.ui.input(...)
+		end
+	end,
+}
+return { colorscheme, highlight_comments, indent_blank_lines, show_marks, selects_and_inputs }

@@ -13,82 +13,10 @@ return {
 			"nvim-treesitter/nvim-treesitter",
 		},
 		keys = {
-			{ "<leader>cr", "", desc = "+refactor", mode = { "n", "v" } },
-			{
-				"<leader>crs",
-				pick,
-				mode = "v",
-				desc = "Refactor",
-			},
-			{
-				"<leader>cri",
-				"<cmd>Refactor inline_var<cr>",
-				mode = { "n", "v" },
-				desc = "Inline Variable",
-			},
-			{
-				"<leader>crb",
-				"<cmd>Refactor extract_block<cr>",
-				desc = "Extract Block",
-			},
-			{
-				"<leader>crf",
-				function()
-					return require("refactoring").refactor("Extract Block To File")
-				end,
-				desc = "Extract Block To File",
-			},
-			{
-				"<leader>crP",
-				function()
-					return require("refactoring").debug.printf({ below = false })
-				end,
-				desc = "Debug Print",
-			},
-			{
-				"<leader>crp",
-				function()
-					return require("refactoring").debug.print_var({ normal = true })
-				end,
-				desc = "Debug Print Variable",
-			},
-			{
-				"<leader>crc",
-				function()
-					return require("refactoring").debug.cleanup({})
-				end,
-				desc = "Debug Cleanup",
-			},
-			{
-				"<leader>rf",
-				function()
-					return require("refactoring").refactor("Extract Function")
-				end,
-				mode = "v",
-				desc = "Extract Function",
-			},
-			{
-				"<leader>crF",
-				"<cmd>Refactor extract_to_file<cr>",
-				mode = "v",
-				desc = "Extract Function To File",
-			},
-			{
-				"<leader>crx",
-				function()
-					require("refactoring").refactor("Extract Variable")
-				end,
-				mode = "v",
-				desc = "Extract Variable",
-			},
-			{
-				"<leader>crp",
-				function()
-					require("refactoring").debug.print_var()
-				end,
-				mode = "v",
-				desc = "Debug Print Variable",
-			},
+			{ "<leader>cR", "", desc = "refactor", mode = { "n", "x" } },
+			{ "<leader>cRf", "", desc = "function", mode = { "n", "x" } },
+			{ "<leader>cRv", "", desc = "variable", mode = { "n", "x" } },
+			{ "<leader>cRb", "", desc = "block", mode = { "n", "x" } },
 		},
 		opts = {
 			prompt_func_return_type = {
@@ -116,6 +44,39 @@ return {
 		},
 		config = function(_, opts)
 			require("refactoring").setup(opts)
+
+			-- [[KEYMAPS]]
+			-- prompt for a refactor
+			vim.keymap.set({ "n", "x" }, "<leader>cRr", function()
+				require("refactoring").select_refactor()
+			end)
+
+			-- [[functions]]
+			vim.keymap.set({ "n", "x" }, "<leader>cRfe", function()
+				return require("refactoring").refactor("Extract Function")
+			end, { expr = true, desc = "Extract function" })
+			vim.keymap.set({ "n", "x" }, "<leader>cRff", function()
+				return require("refactoring").refactor("Extract Function To File")
+			end, { expr = true, desc = "Extract function to File" })
+			vim.keymap.set({ "n", "x" }, "<leader>cRfi", function()
+				return require("refactoring").refactor("Inline Function")
+			end, { expr = true, desc = "Inline function" })
+
+			-- [[variables]]
+			vim.keymap.set({ "n", "x" }, "<leader>cRve", function()
+				return require("refactoring").refactor("Extract Variable")
+			end, { expr = true, desc = "Extract variable" })
+			vim.keymap.set({ "n", "x" }, "<leader>cRvi", function()
+				return require("refactoring").refactor("Inline Variable")
+			end, { expr = true, desc = "Inline variable" })
+
+			-- [[blocks]]
+			vim.keymap.set({ "n", "x" }, "<leader>cRbb", function()
+				return require("refactoring").refactor("Extract Block")
+			end, { expr = true, desc = "Extract block" })
+			vim.keymap.set({ "n", "x" }, "<leader>cRbf", function()
+				return require("refactoring").refactor("Extract Block To File")
+			end, { expr = true, desc = "Extract block to file" })
 		end,
 	},
 }
