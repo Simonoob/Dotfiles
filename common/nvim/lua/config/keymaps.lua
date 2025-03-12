@@ -24,20 +24,20 @@ map("n", "<leader>bo", "<cmd>:%bd|e#<cr>", { desc = "Delete Other Buffers" })
 
 -- Clear search and stop snippet on escape
 map({ "i", "n", "s" }, "<esc>", function()
-  vim.cmd "noh"
-  return "<esc>"
+	vim.cmd("noh")
+	return "<esc>"
 end, { expr = true, desc = "Escape and Clear hlsearch" })
 
 -- Clear search, diff update and redraw
 -- taken from runtime/lua/_editor.lua
-require("which-key").add {
-  { "<leader>u", group = "ui", icon = { icon = "󰙵 ", color = "cyan" }, mode = "n" },
-}
+require("which-key").add({
+	{ "<leader>u", group = "ui", icon = { icon = "󰙵 ", color = "cyan" }, mode = "n" },
+})
 map(
-  "n",
-  "<leader>ur",
-  "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
-  { desc = "Redraw / Clear hlsearch / Diff Update" }
+	"n",
+	"<leader>ur",
+	"<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
+	{ desc = "Redraw / Clear hlsearch / Diff Update" }
 )
 
 -- better indenting
@@ -52,18 +52,18 @@ map("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
 
 -- location list
 map("n", "<leader>xl", function()
-  local success, err = pcall(vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 and vim.cmd.lclose or vim.cmd.lopen)
-  if not success and err then
-    vim.notify(err, vim.log.levels.ERROR)
-  end
+	local success, err = pcall(vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 and vim.cmd.lclose or vim.cmd.lopen)
+	if not success and err then
+		vim.notify(err, vim.log.levels.ERROR)
+	end
 end, { desc = "Location List" })
 
 -- quickfix list
 map("n", "<leader>xq", function()
-  local success, err = pcall(vim.fn.getqflist({ winid = 0 }).winid ~= 0 and vim.cmd.cclose or vim.cmd.copen)
-  if not success and err then
-    vim.notify(err, vim.log.levels.ERROR)
-  end
+	local success, err = pcall(vim.fn.getqflist({ winid = 0 }).winid ~= 0 and vim.cmd.cclose or vim.cmd.copen)
+	if not success and err then
+		vim.notify(err, vim.log.levels.ERROR)
+	end
 end, { desc = "Quickfix List" })
 
 map("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
@@ -71,11 +71,11 @@ map("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
 -- diagnostic
 local diagnostic_goto = function(next, severity)
-  local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
-  severity = severity and vim.diagnostic.severity[severity] or nil
-  return function()
-    go { severity = severity }
-  end
+	local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
+	severity = severity and vim.diagnostic.severity[severity] or nil
+	return function()
+		go({ severity = severity })
+	end
 end
 map("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
 map("n", "]d", diagnostic_goto(true), { desc = "Next Diagnostic" })
@@ -87,19 +87,19 @@ map("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 
 -- git
 map("n", "<leader>gb", function()
-  Snacks.picker.git_log_line()
+	Snacks.picker.git_log_line()
 end, { desc = "Git Blame Line" })
 
 -- quit
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
 
 -- folding
-require("which-key").add {
-  mode = { "n" },
-  { "<leader>z", group = "folds (treesitter)", icon = { icon = "", color = "green" } },
-  { "<leader>zA", "<cmd>set foldlevel=99<cr>", desc = "Open All Folds" },
-  { "<leader>zC", "<cmd>set foldlevel=0<cr>", desc = "Close All Folds" },
-  { "<leader>za", "za", desc = "Toggle Fold" },
-  { "<leader>zo", "zo", desc = "Open Fold" },
-  { "<leader>zc", "zc", desc = "Close Fold" },
-}
+require("which-key").add({
+	mode = { "n" },
+	{ "<leader>z", group = "folds (treesitter)", icon = { icon = "", color = "green" } },
+	{ "<leader>zA", "<cmd>set foldlevel=99<cr>", desc = "Open All Folds" },
+	{ "<leader>zC", "<cmd>set foldlevel=0<cr>", desc = "Close All Folds" },
+	{ "<leader>za", "za", desc = "Toggle Fold" },
+	{ "<leader>zo", "zo", desc = "Open Fold" },
+	{ "<leader>zc", "zc", desc = "Close Fold" },
+})
