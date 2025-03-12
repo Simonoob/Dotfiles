@@ -23,8 +23,9 @@ ln -s $DOTFILES/mac/kitty $HOME/.config/kitty
 echo 'SimLink created: Kitty'
 
 rm -rf $HOME/.config/nvim
-ln -s $DOTFILES/common/nvim $HOME/.config/nvim
 # ln -s $DOTFILES/common/lazyvim $HOME/.config/nvim
+# ln -s $DOTFILES/common/nvim-old $HOME/.config/nvim
+ln -s $DOTFILES/common/nvim-new $HOME/.config/nvim
 echo 'SimLink created: Nvim'
 
 rm -rf $HOME/.config/lvim
