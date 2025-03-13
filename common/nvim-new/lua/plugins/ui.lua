@@ -70,7 +70,7 @@ local indent_blank_lines = { -- Add indentation guides even on blank lines
 
 		vim.g.rainbow_delimiters = { highlight = scopeHighlight }
 		require("ibl").setup({
-			scope = { highlight = scopeHighlight, char = "▎" },
+			scope = { highlight = scopeHighlight, char = "│" },
 			indent = { char = " " },
 		})
 
