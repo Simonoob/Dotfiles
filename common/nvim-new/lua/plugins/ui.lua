@@ -42,14 +42,46 @@ local colorscheme = {
 	end,
 }
 
-local indent_blank_lines = {
-	{ -- Add indentation guides even on blank lines
-		"lukas-reineke/indent-blankline.nvim",
-		-- Enable `lukas-reineke/indent-blankline.nvim`
-		-- See `:help ibl`
-		main = "ibl",
-		opts = {},
-	},
+local indent_blank_lines = { -- Add indentation guides even on blank lines
+	"lukas-reineke/indent-blankline.nvim",
+	-- Enable `lukas-reineke/indent-blankline.nvim`
+	-- See `:help ibl`
+	main = "ibl",
+	opts = {},
+	config = function()
+		local scopeHighlight = {
+			"RainbowRed",
+			"RainbowBlue",
+			"RainbowOrange",
+			"RainbowGreen",
+			"RainbowViolet",
+		}
+
+		local hooks = require("ibl.hooks")
+		-- create the highlight groups in the highlight setup hook, so they are reset
+		-- every time the colorscheme changes
+		hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+			vim.api.nvim_set_hl(0, "RainbowRed", { fg = "#bb3e03" })
+			vim.api.nvim_set_hl(0, "RainbowBlue", { fg = "#005f73" })
+			vim.api.nvim_set_hl(0, "RainbowOrange", { fg = "#ca6702" })
+			vim.api.nvim_set_hl(0, "RainbowGreen", { fg = "#0a9396" })
+			vim.api.nvim_set_hl(0, "RainbowViolet", { fg = "#6a4c93" })
+		end)
+
+		vim.g.rainbow_delimiters = { highlight = scopeHighlight }
+		require("ibl").setup({
+			scope = { highlight = scopeHighlight, char = "▎" },
+			indent = { char = " " },
+		})
+
+		hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
+	end,
+}
+
+local highlight_delimeters = {
+	"HiPhish/rainbow-delimiters.nvim",
+	opts = {},
+	config = function() end,
 }
 
 local highlight_comments = {
@@ -127,4 +159,4 @@ local selects_and_inputs = {
 		end
 	end,
 }
-return { colorscheme, highlight_comments, indent_blank_lines, show_marks, selects_and_inputs }
+return { colorscheme, highlight_comments, indent_blank_lines, highlight_delimeters, show_marks, selects_and_inputs }
