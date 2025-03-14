@@ -42,48 +42,6 @@ local colorscheme = {
 	end,
 }
 
-local indent_blank_lines = { -- Add indentation guides even on blank lines
-	"lukas-reineke/indent-blankline.nvim",
-	-- Enable `lukas-reineke/indent-blankline.nvim`
-	-- See `:help ibl`
-	main = "ibl",
-	opts = {},
-	config = function()
-		local scopeHighlight = {
-			"RainbowRed",
-			"RainbowBlue",
-			"RainbowOrange",
-			"RainbowGreen",
-			"RainbowViolet",
-		}
-
-		local hooks = require("ibl.hooks")
-		-- create the highlight groups in the highlight setup hook, so they are reset
-		-- every time the colorscheme changes
-		hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
-			vim.api.nvim_set_hl(0, "RainbowRed", { fg = "#bb3e03" })
-			vim.api.nvim_set_hl(0, "RainbowBlue", { fg = "#005f73" })
-			vim.api.nvim_set_hl(0, "RainbowOrange", { fg = "#ca6702" })
-			vim.api.nvim_set_hl(0, "RainbowGreen", { fg = "#0a9396" })
-			vim.api.nvim_set_hl(0, "RainbowViolet", { fg = "#6a4c93" })
-		end)
-
-		vim.g.rainbow_delimiters = { highlight = scopeHighlight }
-		require("ibl").setup({
-			scope = { highlight = scopeHighlight, char = "│" },
-			indent = { char = " " },
-		})
-
-		hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
-	end,
-}
-
-local highlight_delimeters = {
-	"HiPhish/rainbow-delimiters.nvim",
-	opts = {},
-	config = function() end,
-}
-
 local highlight_comments = {
 	-- Highlight todo, notes, etc in comments
 	"folke/todo-comments.nvim",
@@ -142,21 +100,89 @@ local show_marks = {
 	end,
 }
 
-local selects_and_inputs = {
-	-- Better UI for vim.ui.select/input
-	"stevearc/dressing.nvim",
-	lazy = true,
-	init = function()
-		---@diagnostic disable-next-line: duplicate-set-field
-		vim.ui.select = function(...)
-			require("lazy").load({ plugins = { "dressing.nvim" } })
-			return vim.ui.select(...)
-		end
-		---@diagnostic disable-next-line: duplicate-set-field
-		vim.ui.input = function(...)
-			require("lazy").load({ plugins = { "dressing.nvim" } })
-			return vim.ui.input(...)
-		end
-	end,
+local snacks = {
+	"folke/snacks.nvim",
+	---@type snacks.Config
+	priority = 1000,
+	opts = {
+		input = {
+			-- your input configuration comes here
+			-- or leave it empty to use the default settings
+			-- refer to the configuration section below
+			enabled = true,
+		},
+		---@field enabled? boolean
+		---@class snacks.indent.Config
+		indent = {
+			indent = {
+				priority = 1,
+				enabled = false, -- enable indent guides
+				char = "│",
+				only_scope = false, -- only show indent guides of the scope
+				only_current = false, -- only show indent guides in the current window
+				hl = "SnacksIndent", ---@type string|string[] hl groups for indent guides
+				-- can be a list of hl groups to cycle through
+				-- hl = {
+				-- 	"SnacksIndent1",
+				-- 	"SnacksIndent2",
+				-- 	"SnacksIndent3",
+				-- 	"SnacksIndent4",
+				-- 	"SnacksIndent5",
+				-- 	"SnacksIndent6",
+				-- 	"SnacksIndent7",
+				-- 	"SnacksIndent8",
+				-- },
+			},
+			-- animate scopes. Enabled by default for Neovim >= 0.10
+			-- Works on older versions but has to trigger redraws during animation.
+			---@class snacks.indent.animate: snacks.animate.Config
+			---@field enabled? boolean
+			--- * out: animate outwards from the cursor
+			--- * up: animate upwards from the cursor
+			--- * down: animate downwards from the cursor
+			--- * up_down: animate up or down based on the cursor position
+			---@field style? "out"|"up_down"|"down"|"up"
+			animate = {
+				enabled = false,
+			},
+			---@class snacks.indent.Scope.Config: snacks.scope.Config
+			scope = {
+				enabled = true, -- enable highlighting the current scope
+				priority = 200,
+				char = "│",
+				underline = false, -- underline the start of the scope
+				only_current = false, -- only show scope in the current window
+				hl = "SnacksIndentScope", ---@type string|string[] hl group for scopes
+			},
+			chunk = {
+				-- when enabled, scopes will be rendered as chunks, except for the
+				-- top-level scope which will be rendered as a scope.
+				enabled = false,
+				-- only show chunk scopes in the current window
+				only_current = false,
+				priority = 200,
+				hl = "SnacksIndentChunk", ---@type string|string[] hl group for chunk scopes
+				char = {
+					-- corner_top = "┌",
+					-- corner_bottom = "└",
+					corner_top = "╭",
+					corner_bottom = "╰",
+					horizontal = "─",
+					vertical = "│",
+					arrow = ">",
+				},
+			},
+			-- filter for buffers to enable indent guides
+			filter = function(buf)
+				return vim.g.snacks_indent ~= false and vim.b[buf].snacks_indent ~= false and vim.bo[buf].buftype == ""
+			end,
+		},
+	},
 }
-return { colorscheme, highlight_comments, indent_blank_lines, highlight_delimeters, show_marks, selects_and_inputs }
+
+return {
+	colorscheme,
+	highlight_comments,
+	show_marks,
+	snacks,
+}
