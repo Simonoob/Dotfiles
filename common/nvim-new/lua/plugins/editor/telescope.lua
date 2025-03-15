@@ -96,7 +96,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		{ "<leader>gs", "<cmd>Telescope git_status<CR>", desc = "Git Status" },
 
 		-- Search
-		{ "<leader>sr", "<cmd>Telescope registers<cr>", desc = "Registers" },
+		-- { "<leader>sr", "<cmd>Telescope registers<cr>", desc = "Registers" },
 		{ "<leader>sa", "<cmd>Telescope autocommands<cr>", desc = "Auto Commands" },
 		{ "<leader>sc", "<cmd>Telescope command_history<cr>", desc = "Command History" },
 		{ "<leader>sC", "<cmd>Telescope commands<cr>", desc = "Commands" },
@@ -284,6 +284,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		-- Enable Telescope extensions if they are installed
 		pcall(require("telescope").load_extension, "fzf")
 		pcall(require("telescope").load_extension, "ui-select")
+		pcall(require("telescope").load_extension("neoclip"))
 
 		-- See `:help telescope.builtin`
 		local builtin = require("telescope.builtin")
