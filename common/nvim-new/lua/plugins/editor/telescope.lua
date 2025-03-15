@@ -1,12 +1,3 @@
--- Find build command for telescope-fzf-native
-local build_cmd
-for _, cmd in ipairs({ "make", "cmake", "gmake" }) do
-	if vim.fn.executable(cmd) == 1 then
-		build_cmd = cmd
-		break
-	end
-end
-
 -- Find best file finder command
 local function find_command()
 	if 1 == vim.fn.executable("rg") then
@@ -193,7 +184,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		local actions = require("telescope.actions")
 
 		-- Function to support trouble plugin if installed
-		local open_with_trouble = function(...)
+		local open_with_trouble = function()
 			return vim.cmd.Trouble("telescope")
 		end
 
