@@ -104,6 +104,10 @@ local lsp_config = {
 				-- or a suggestion from your LSP for this to activate.
 				map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" })
 
+				map("<leader>K", function()
+					vim.diagnostic.open_float(nil, { focus = true, scope = "line" })
+				end, "Show line diagnostics")
+
 				-- WARN: This is not Goto Definition, this is Goto Declaration.
 				--  For example, in C this would take you to the header.
 				map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
@@ -139,7 +143,9 @@ local lsp_config = {
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 						buffer = event.buf,
 						group = highlight_augroup,
-						callback = vim.lsp.buf.document_highlight,
+						callback = function()
+							vim.lsp.buf.document_highlight()
+						end,
 					})
 
 					vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
@@ -177,6 +183,7 @@ local lsp_config = {
 		vim.diagnostic.config({
 			severity_sort = true,
 			float = { border = "rounded", source = "if_many" },
+			update_in_insert = true,
 			underline = { severity = vim.diagnostic.severity.ERROR },
 			signs = vim.g.have_nerd_font and {
 				text = {
@@ -269,7 +276,7 @@ local lsp_config = {
 		require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
 		require("mason-lspconfig").setup({
-			ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+			ensure_installed = {}, -- explicitly set to an empty table (KKickstart populates installs via mason-tool-installer)
 			automatic_installation = false,
 			handlers = {
 				function(server_name)

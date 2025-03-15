@@ -1,7 +1,11 @@
+local active_events = {
+	-- "BufWritePost", "BufReadPost", "InsertLeave",
+	"TextChanged", -- run on all text changes
+}
 return {
 	{
 		"mfussenegger/nvim-lint",
-		event = { "BufWritePost", "BufReadPost", "InsertLeave" },
+		event = active_events,
 		config = function()
 			local lint = require("lint")
 
@@ -39,7 +43,7 @@ return {
 			end
 
 			-- Setup autocmd to trigger linting
-			vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
+			vim.api.nvim_create_autocmd(active_events, {
 				group = vim.api.nvim_create_augroup("nvim-lint", { clear = true }),
 				callback = debounce(100, do_lint),
 			})
