@@ -50,43 +50,26 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		},
 		{ "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
 		{
-			"<leader>fF",
+			"<leader>ffw",
 			"<cmd>lua require('telescope.builtin').find_files({ cwd = vim.fn.getcwd() })<cr>",
 			desc = "Find Files (cwd)",
 		},
-		-- Hidden and ignored files only
+		-- hidden files
 		{
-			"<leader>fh",
-			function()
-				require("telescope.builtin").find_files({
-					find_command = {
-						"fd",
-						"--type",
-						"f",
-						"--hidden",
-						"--no-ignore-vcs",
-					},
-					prompt_title = "Find Hidden Files Only",
-				})
-			end,
-			desc = "Find Hidden Files Only",
-		},
-		-- All files (hidden + ignored + normal)
-		{
-			"<leader>fa",
+			"<leader>ffh",
 			function()
 				require("telescope.builtin").find_files({
 					hidden = true,
 					no_ignore = true,
-					prompt_title = "Find All Files",
+					prompt_title = "Find Files (Inc. Hidden)",
 				})
 			end,
-			desc = "Find All Files",
+			desc = "Find Files (Inc. Hidden",
 		},
-		{ "<leader>fg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
-		{ "<leader>fr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
+		{ "<leader>ffg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
+		{ "<leader>ffr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
 		{
-			"<leader>fR",
+			"<leader>ffrw",
 			"<cmd>lua require('telescope.builtin').oldfiles({ cwd = vim.fn.getcwd() })<cr>",
 			desc = "Recent Files (cwd)",
 		},
@@ -104,34 +87,22 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		{ "<leader>sD", "<cmd>Telescope diagnostics<cr>", desc = "Workspace Diagnostics" },
 		{ "<leader>sg", "<cmd>Telescope live_grep<cr>", desc = "Grep" },
 		{
-			"<leader>sG",
+			"<leader>sgw",
 			"<cmd>lua require('telescope.builtin').live_grep({ cwd = vim.fn.getcwd() })<cr>",
 			desc = "Grep (cwd)",
 		},
-		-- Grep in hidden files only
+		-- Grep in hidden files
 		{
 			"<leader>sgh",
 			function()
 				require("telescope.builtin").live_grep({
 					additional_args = function()
-						return { "--hidden", "--no-ignore-vcs" }
+						return { "--hidden" }
 					end,
-					prompt_title = "Grep (Hidden Files Only)",
+					prompt_title = "Grep (Inc. Hidden Files)",
 				})
 			end,
-			desc = "Grep (hidden files only)",
-		},
-		-- Grep in all files
-		{
-			"<leader>sga",
-			function()
-				require("telescope.builtin").live_grep({
-					hidden = true,
-					no_ignore = true,
-					prompt_title = "Grep (All Files)",
-				})
-			end,
-			desc = "Grep (all files)",
+			desc = "Grep (inc. hidden files)",
 		},
 		{ "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "Help Pages" },
 		{ "<leader>sH", "<cmd>Telescope highlights<cr>", desc = "Search Highlight Groups" },
