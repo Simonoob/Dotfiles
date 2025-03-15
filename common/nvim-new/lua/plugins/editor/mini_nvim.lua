@@ -1,4 +1,4 @@
-return { -- Collection of various small independent plugins/modules
+local mini_nvim = { -- Collection of various small independent plugins/modules
 	"echasnovski/mini.nvim",
 	version = false,
 	config = function()
@@ -34,5 +34,20 @@ return { -- Collection of various small independent plugins/modules
 
 		-- ... and there is more!
 		--  Check out: https://github.com/echasnovski/mini.nvim
+		--
+		--
+		-- quality of life plugin for comments - works in tandem with smart_comments below
+		require("mini.comment").setup()
 	end,
 }
+
+local smart_comments = {
+	-- smart augmentation of comments based on treesitter nodes
+	-- it helps to e.g. format comments correctly in .tsx files based on cursor location (TS context | JSX context)
+	"folke/ts-comments.nvim",
+	opts = {},
+	event = "VeryLazy",
+	enabled = vim.fn.has("nvim-0.10.0") == 1,
+}
+
+return { smart_comments, mini_nvim }
