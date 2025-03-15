@@ -39,6 +39,9 @@ local colorscheme = {
 		-- Set colorscheme after options
 		-- Toggle between modes with ':set background=dark/light'
 		vim.cmd("colorscheme gruvbox")
+
+		-- set sign column color (left gutter) to the `GruvboxBg0` highlight group
+		vim.cmd("highlight SignColumn guibg=GruvboxBg0")
 	end,
 }
 
