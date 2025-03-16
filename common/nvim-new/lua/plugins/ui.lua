@@ -183,9 +183,23 @@ local snacks = {
 	},
 }
 
+local highlight_matching_parenthesis = {
+	"utilyre/sentiment.nvim",
+	version = "*",
+	event = "VeryLazy", -- keep for lazy loading
+	opts = {
+		-- config
+	},
+	init = function()
+		-- `matchparen.vim` needs to be disabled manually in case of lazy loading
+		vim.g.loaded_matchparen = 1
+	end,
+}
+
 return {
 	colorscheme,
 	highlight_comments,
 	show_marks,
 	snacks,
+	highlight_matching_parenthesis,
 }
