@@ -4,7 +4,6 @@ return { -- Highlight, edit, and navigate code
 	event = { "BufReadPost", "BufNewFile" }, -- Lazy loads only when buffers are read/created
 	dependencies = {
 		"nvim-treesitter/nvim-treesitter-textobjects", -- Adds text objects for code navigation
-		"windwp/nvim-ts-autotag", -- Auto close/rename HTML/JSX tags (essential for web dev)
 	},
 	main = "nvim-treesitter.configs", -- Sets main module to use for opts
 	-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -47,7 +46,6 @@ return { -- Highlight, edit, and navigate code
 					node_decremental = "<bs>", -- Shrink selection with Backspace
 				},
 			},
-			autotag = { enable = true }, -- Auto close/rename HTML and JSX tags
 			textobjects = {
 				-- Custom text objects for selecting code blocks
 				select = {
