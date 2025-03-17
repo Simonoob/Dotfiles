@@ -64,7 +64,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 					prompt_title = "Find Files (Inc. Hidden)",
 				})
 			end,
-			desc = "Find Files (Inc. Hidden",
+			desc = "Find Files (Inc. Hidden)",
 		},
 		{ "<leader>ffg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
 		{ "<leader>ffr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
@@ -112,7 +112,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		{ "<leader>sM", "<cmd>Telescope man_pages<cr>", desc = "Man Pages" },
 		{ "<leader>sm", "<cmd>Telescope marks<cr>", desc = "Jump to Mark" },
 		{ "<leader>so", "<cmd>Telescope vim_options<cr>", desc = "Options" },
-		{ "<leader>sR", "<cmd>Telescope resume<cr>", desc = "Resume" },
+		{ "<leader>fr", "<cmd>Telescope resume<cr>", desc = "Resume" },
 		{ "<leader>sq", "<cmd>Telescope quickfix<cr>", desc = "Quickfix List" },
 		{
 			"<leader>sw",
