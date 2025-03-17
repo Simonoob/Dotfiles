@@ -69,10 +69,10 @@ return { -- Autoformat
 			-- python = { "isort", "black" },
 			--
 			-- You can use 'stop_after_first' to run the first available formatter from the list
-			javascript = { "eslint_d", "prettierd", stop_after_first = true },
-			typescript = { "eslint_d", "prettierd", stop_after_first = true },
-			javascriptreact = { "eslint_d", "prettierd", stop_after_first = true },
-			typescriptreact = { "eslint_d", "prettierd", stop_after_first = true },
+			javascript = { "eslint_d", "prettierd" },
+			typescript = { "eslint_d", "prettierd" },
+			javascriptreact = { "eslint_d", "prettierd" },
+			typescriptreact = { "eslint_d", "prettierd" },
 		},
 	},
 }
