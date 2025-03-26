@@ -120,12 +120,6 @@ export PATH=$HOME/bin:/usr/local/bin:$PATH #add bin folder to PATH
 
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
-
 
 # Herd injected NVM configuration
 # export NVM_DIR="/Users/simonoob/Library/Application Support/Herd/config/nvm"
@@ -154,3 +148,12 @@ export EJSON_KEYDIR=~/.ejson
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/simonoob/.lmstudio/bin"
+
+# poetry
+export PATH="/Users/simonoob/.asdf/installs/poetry/2.1.1/bin:$PATH"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc'; fi
