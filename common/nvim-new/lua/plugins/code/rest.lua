@@ -46,7 +46,7 @@ local inc_rename = {
 	keys = {
 		{
 			mode = { "n" },
-			"<leader>cr",
+			"<leader>cR",
 			function()
 				return ":IncRename " .. vim.fn.expand("<cword>")
 			end,

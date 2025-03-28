@@ -78,3 +78,6 @@ vim.opt.scrolloff = 10
 
 -- don't redraw the screen when executing macros
 vim.opt.lazyredraw = true
+
+-- don't wrap text by default
+vim.opt.wrap = false
