@@ -40,7 +40,7 @@ return { -- Autoformat
 	opts = {
 		notify_on_error = true,
 		default_format_opts = {
-			timeout = 2000,
+			timeout = 3000,
 		},
 		format_on_save = function(bufnr)
 			-- Skip formatting if disabled

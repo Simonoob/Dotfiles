@@ -157,3 +157,27 @@ if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc' ]; then . '/
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc'; fi
+
+
+alias work="timer 40m && say 'time for a break' \
+                && terminal-notifier -message 'Pomodoro'\
+        -title 'Work Timer is up! Take a Break 😊'\
+        -appIcon 'http://vjeantet.fr/images/logo.png' \
+        -sound Crystal"
+
+alias rest="timer 10m && say 'break is over! get back to work' \
+                && terminal-notifier -message 'Pomodoro'\
+        -title 'Break is over! Get back to work 😬'\
+        -appIcon 'http://vjeantet.fr/images/logo.png' \
+        -sound Crystal"
+
+pomo(){
+        echo "How many rounds you want to do?"
+        read count;
+        for i in {1..$count};
+        do
+                work;
+                sleep 1;
+                rest;
+        done
+}
