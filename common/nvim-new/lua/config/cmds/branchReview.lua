@@ -49,25 +49,8 @@ end
 
 local function handle_gitsigns(modified_files, comparison_branch)
 	-- Configure Gitsigns to use the selected branch as base
-	vim.cmd("Gitsigns change_base " .. comparison_branch)
-
-	-- Setup autocommand to set Gitsigns base for modified files
-	vim.api.nvim_create_augroup("GitSignsModifiedFiles", { clear = true })
-	vim.api.nvim_create_autocmd("BufEnter", {
-		group = "GitSignsModifiedFiles",
-		callback = function()
-			vim.notify("gitSigns command", vim.log.levels.INFO)
-			local current_file = vim.fn.expand("%:p")
-			local relative_path = vim.fn.fnamemodify(current_file, ":.")
-
-			for _, file in ipairs(modified_files) do
-				if file == relative_path then
-					vim.cmd("Gitsigns change_base " .. comparison_branch)
-					break
-				end
-			end
-		end,
-	})
+	vim.cmd("Gitsigns change_base " .. comparison_branch .. " global")
+	vim.cmd("Gitsigns refresh")
 end
 
 local function get_modified_chunks(comparison_branch)
@@ -106,13 +89,92 @@ local function add_modified_chunks_to_quickfix(modified_chunks)
 	vim.fn.setqflist(modified_chunks)
 end
 
-local function open_quickfix_list(qf_items, comparison_branch)
-	if #qf_items > 0 then
-		vim.cmd("Trouble quickfix")
-		vim.notify("Found " .. #qf_items .. " changed chunks against " .. comparison_branch, vim.log.levels.INFO)
-	else
-		vim.notify("No changes found against " .. comparison_branch, vim.log.levels.INFO)
+local function open_quickfix_list(qf_items, modified_files, comparison_branch)
+	if #qf_items == 0 then
+		vim.notify(
+			"Found " .. #modified_files .. " modified files with " .. #qf_items .. " changed chunks",
+			vim.log.levels.INFO
+		)
+		return
 	end
+
+	vim.notify(
+		"Found " .. #modified_files .. " modified files with " .. #qf_items .. " changed chunks",
+		vim.log.levels.INFO
+	)
+
+	-- Create a table for file entries with chunk information
+	local file_entries = {}
+	local file_chunks = {}
+
+	-- Count chunks per file and organize chunk info
+	for _, item in ipairs(qf_items) do
+		if not file_chunks[item.filename] then
+			file_chunks[item.filename] = {
+				count = 0,
+				locations = {},
+			}
+		end
+		file_chunks[item.filename].count = file_chunks[item.filename].count + 1
+		table.insert(file_chunks[item.filename].locations, item)
+	end
+
+	-- Create entries for selection
+	for _, file in ipairs(modified_files) do
+		if file ~= "" then
+			table.insert(file_entries, {
+				filename = file,
+				chunks = file_chunks[file] or { count = 0, locations = {} },
+			})
+		end
+	end
+
+	local previewers = require("telescope.previewers")
+	-- Define our custom telescope config for vim.ui.select
+	local telescope_config = {
+		initial_mode = "normal",
+		previewer = previewers.new_buffer_previewer({
+			title = "Change Summary",
+			define_preview = function(self, entry, status)
+				local content = {}
+				table.insert(content, "")
+				table.insert(content, "Total chunks changed: " .. entry.value.chunks.count)
+				table.insert(content, "")
+
+				if entry.value.chunks.count > 0 then
+					vim.api.nvim_buf_set_lines(
+						self.state.bufnr,
+						0,
+						3,
+						false,
+						{ "# Total chunks: " .. entry.value.chunks.count, "", "## Changes:" }
+					)
+					for i, loc in ipairs(entry.value.chunks.locations) do
+						vim.api.nvim_buf_set_lines(self.state.bufnr, i + 2, i + 3, false, { "- Line " .. loc.lnum })
+					end
+				else
+					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, 1, false, { "no chunk information available" })
+				end
+				return content
+			end,
+		}),
+	}
+
+	vim.ui.select(file_entries, {
+		prompt = "Modified files against " .. comparison_branch .. ":",
+		format_item = function(item)
+			return item.filename
+		end,
+		telescope = telescope_config,
+	}, function(selected)
+		if not selected then
+			vim.notify("No file selected", vim.log.levels.WARN)
+			return
+		end
+
+		-- Open the selected file
+		vim.cmd("edit " .. selected.filename)
+	end)
 end
 
 local function get_modified_files(comparison_branch)
@@ -137,16 +199,11 @@ local function on_branch_selected(comparison_branch)
 	local modified_files = get_modified_files(comparison_branch)
 	local modified_chunks = get_modified_chunks(comparison_branch)
 
-	handle_gitsigns(modified_files, comparison_branch)
-
 	add_modified_chunks_to_quickfix(modified_chunks)
 
-	open_quickfix_list(modified_chunks, comparison_branch)
+	open_quickfix_list(modified_chunks, modified_files, comparison_branch)
 
-	-- Optional: Open first modified file
-	if #modified_files > 0 and modified_files[1] ~= "" then
-		vim.cmd("edit " .. modified_files[1])
-	end
+	handle_gitsigns(modified_files, comparison_branch)
 end
 
 local function start_review_mode()
@@ -196,7 +253,7 @@ end
 local valid_commands = { "start", "stop" }
 
 -- Function to review changes against a selected branch
-vim.api.nvim_create_user_command("ReviewMode", function(opts)
+vim.api.nvim_create_user_command("BranchReview", function(opts)
 	local command = opts.args
 	if not vim.tbl_contains(valid_commands, command) then
 		vim.notify("Invalid command. Valid commands are: " .. vim.inspect(valid_commands), vim.log.levels.ERROR)
@@ -212,7 +269,7 @@ vim.api.nvim_create_user_command("ReviewMode", function(opts)
 	end
 end, {
 	nargs = 1,
-	desc = "Git review mode",
+	desc = "Git branch review mode",
 	complete = function(ArgLead, CmdLine, CursorPos)
 		-- Check if a valid command is already in the command line
 		for _, cmd in ipairs(valid_commands) do
