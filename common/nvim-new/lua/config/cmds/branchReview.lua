@@ -1,17 +1,39 @@
+local actions = require("telescope.actions")
+local action_state = require("telescope.actions.state")
+local pickers = require("telescope.pickers")
+local finders = require("telescope.finders")
+local previewers = require("telescope.previewers")
+local conf = require("telescope.config").values
+local dropdown = require("telescope.themes").get_dropdown()
+
+local branchReview = {
+	enabled = false,
+	comparison_branch = nil,
+}
+
+local function get_current_branch()
+	local branch = vim.fn.system("git branch --show-current | tr -d '\n'")
+	return branch
+end
+local original_statusline = vim.o.statusline
+local function update_status_line(enabled)
+	enabled = enabled == nil and branchReview.enabled or enabled
+	if enabled then
+		vim.o.statusline = "[BranchReview] checking "
+			.. get_current_branch()
+			.. " against "
+			.. (branchReview.comparison_branch or "???")
+	else
+		vim.o.statusline = original_statusline
+	end
+end
+
 local function dropdown_pick_telescope(opts)
 	local telescope_ok = pcall(require, "telescope.builtin")
 	if not telescope_ok then
 		vim.notify("Telescope is required for this function", vim.log.levels.ERROR)
 		return
 	end
-
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
-	local pickers = require("telescope.pickers")
-	local finders = require("telescope.finders")
-	local previewers = require("telescope.previewers")
-	local conf = require("telescope.config").values
-	local dropdown = require("telescope.themes").get_dropdown()
 
 	opts = opts
 		or {
@@ -44,9 +66,6 @@ local function telescope_select_branch(branches, on_select_fn)
 			end,
 		}),
 		attach_mappings = function(prompt_bufnr, map)
-			local actions = require("telescope.actions")
-			local action_state = require("telescope.actions.state")
-
 			actions.select_default:replace(function()
 				actions.close(prompt_bufnr)
 				local selected = action_state.get_selected_entry()
@@ -91,7 +110,7 @@ end
 
 local function handle_gitsigns(modified_files, comparison_branch)
 	-- Configure Gitsigns to use the selected branch as base
-	vim.cmd("Gitsigns change_base " .. comparison_branch .. " global")
+	vim.cmd("Gitsigns change_base " .. get_current_branch() .. "..." .. comparison_branch .. " global") -- TODO: fixme pls it doesn't show any diff atm
 	vim.cmd("Gitsigns refresh")
 end
 
@@ -203,7 +222,7 @@ local function open_quickfix_list(qf_items, modified_files, comparison_branch)
 			end,
 		}),
 
-		previewer = require("telescope.previewers").new_buffer_previewer({
+		previewer = previewers.new_buffer_previewer({
 			title = "Changes Summary",
 			define_preview = function(self, entry, status)
 				if entry.value.chunks.count > 0 then
@@ -247,18 +266,11 @@ local function get_modified_files(comparison_branch)
 	return modified_files
 end
 
--- Initialize global gitReviewMode if it doesn't exist
-if not _G.gitReviewMode then
-	_G.gitReviewMode = {
-		enabled = false,
-		current_branch = nil,
-	}
-end
-
 local function on_branch_selected(comparison_branch)
+	print(branchReview.comparison_branch)
 	-- Pull the selected branch
 	vim.notify("Pulling " .. comparison_branch .. "...", vim.log.levels.INFO)
-	vim.fn.system("git pull origin " .. comparison_branch)
+	vim.fn.system("git fetch origin " .. comparison_branch .. ":" .. comparison_branch)
 
 	local modified_files = get_modified_files(comparison_branch)
 	local modified_chunks = get_modified_chunks(comparison_branch)
@@ -271,21 +283,22 @@ local function on_branch_selected(comparison_branch)
 end
 
 local function start_review_mode()
-	if _G.gitReviewMode.enabled then
+	if branchReview.enabled then
 		vim.notify("Review mode is already enabled", vim.log.levels.WARN)
 		return
 	end
 
 	local branches = get_branches_list()
 	telescope_select_branch(branches, function(selected_branch)
-		_G.gitReviewMode.enabled = true
-		_G.gitReviewMode.current_branch = selected_branch
+		branchReview.enabled = true
+		branchReview.comparison_branch = selected_branch
+		update_status_line(true)
 		on_branch_selected(selected_branch)
 	end)
 end
 
 local function stop_review_mode()
-	if not _G.gitReviewMode.enabled then
+	if not branchReview.enabled then
 		vim.notify("Review mode is not enabled", vim.log.levels.WARN)
 		return
 	end
@@ -298,8 +311,8 @@ local function stop_review_mode()
 	vim.fn.setqflist({}, "r")
 
 	-- Reset state
-	_G.gitReviewMode.enabled = false
-	_G.gitReviewMode.current_branch = nil
+	branchReview.enabled = false
+	branchReview.comparison_branch = nil
 
 	vim.notify("Review mode stopped", vim.log.levels.INFO)
 end
@@ -341,3 +354,17 @@ end, {
 		return matches
 	end,
 })
+
+branchReview.setup = function()
+	vim.keymap.set("n", "<leader>gr", function()
+		if branchReview.enabled then
+			vim.cmd("BranchReview stop")
+			update_status_line(false)
+		else
+			vim.cmd("BranchReview start")
+			update_status_line(true)
+		end
+	end, { desc = "Git branch Review toggle" })
+end
+
+return branchReview
