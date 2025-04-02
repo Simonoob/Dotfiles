@@ -30,3 +30,12 @@ vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left wind
 vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
 vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
+
+-- lsp default keymaps that are only available in neovim nightly for now
+vim.keymap.set("n", "grn", vim.lsp.buf.rename, { desc = "rename" })
+vim.keymap.set("n", "gra", vim.lsp.buf.code_action, { desc = "code actions" })
+vim.keymap.set("n", "grr", vim.lsp.buf.references, { desc = "references" })
+vim.keymap.set("n", "grt", vim.lsp.buf.type_definition, { desc = "type definition" })
+vim.keymap.set("n", "grd", vim.lsp.buf.definition, { desc = "definition" })
+vim.keymap.set("n", "grD", vim.lsp.buf.declaration, { desc = "declaration" })
+vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, { desc = "signature help" })
