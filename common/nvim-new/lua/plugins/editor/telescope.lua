@@ -49,14 +49,15 @@ return { -- Fuzzy Finder (files, lsp, etc)
 			desc = "Buffers",
 		},
 		{ "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+		{ "<leader>fF", "", desc = "+ Find Files" },
 		{
-			"<leader>ffw",
+			"<leader>fFw",
 			"<cmd>lua require('telescope.builtin').find_files({ cwd = vim.fn.getcwd() })<cr>",
 			desc = "Find Files (cwd)",
 		},
 		-- hidden files
 		{
-			"<leader>ffh",
+			"<leader>fFh",
 			function()
 				require("telescope.builtin").find_files({
 					hidden = true,
@@ -66,10 +67,10 @@ return { -- Fuzzy Finder (files, lsp, etc)
 			end,
 			desc = "Find Files (Inc. Hidden)",
 		},
-		{ "<leader>ffg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
-		{ "<leader>ffr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
+		{ "<leader>fFg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
+		{ "<leader>fFr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
 		{
-			"<leader>ffrw",
+			"<leader>fFrw",
 			"<cmd>lua require('telescope.builtin').oldfiles({ cwd = vim.fn.getcwd() })<cr>",
 			desc = "Recent Files (cwd)",
 		},
@@ -81,29 +82,9 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		-- Search
 		-- { "<leader>sr", "<cmd>Telescope registers<cr>", desc = "Registers" },
 		{ "<leader>sa", "<cmd>Telescope autocommands<cr>", desc = "Auto Commands" },
-		{ "<leader>sc", "<cmd>Telescope command_history<cr>", desc = "Command History" },
-		{ "<leader>sC", "<cmd>Telescope commands<cr>", desc = "Commands" },
+		{ "<leader>sc", "<cmd>Telescope commands<cr>", desc = "Commands" },
 		{ "<leader>sd", "<cmd>Telescope diagnostics bufnr=0<cr>", desc = "Document Diagnostics" },
 		{ "<leader>sD", "<cmd>Telescope diagnostics<cr>", desc = "Workspace Diagnostics" },
-		{ "<leader>sg", "<cmd>Telescope live_grep<cr>", desc = "Grep" },
-		{
-			"<leader>sgw",
-			"<cmd>lua require('telescope.builtin').live_grep({ cwd = vim.fn.getcwd() })<cr>",
-			desc = "Grep (cwd)",
-		},
-		-- Grep in hidden files
-		{
-			"<leader>sgh",
-			function()
-				require("telescope.builtin").live_grep({
-					additional_args = function()
-						return { "--hidden" }
-					end,
-					prompt_title = "Grep (Inc. Hidden Files)",
-				})
-			end,
-			desc = "Grep (inc. hidden files)",
-		},
 		{ "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "Help Pages" },
 		{ "<leader>sH", "<cmd>Telescope highlights<cr>", desc = "Search Highlight Groups" },
 		{ "<leader>sj", "<cmd>Telescope jumplist<cr>", desc = "Jumplist" },
@@ -114,28 +95,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		{ "<leader>so", "<cmd>Telescope vim_options<cr>", desc = "Options" },
 		{ "<leader>fr", "<cmd>Telescope resume<cr>", desc = "Resume" },
 		{ "<leader>sq", "<cmd>Telescope quickfix<cr>", desc = "Quickfix List" },
-		{
-			"<leader>sw",
-			"<cmd>lua require('telescope.builtin').grep_string({ word_match = '-w' })<cr>",
-			desc = "Word",
-		},
-		{
-			"<leader>sW",
-			"<cmd>lua require('telescope.builtin').grep_string({ cwd = vim.fn.getcwd(), word_match = '-w' })<cr>",
-			desc = "Word (cwd)",
-		},
-		{
-			"<leader>sw",
-			"<cmd>lua require('telescope.builtin').grep_string()<cr>",
-			mode = "v",
-			desc = "Selection",
-		},
-		{
-			"<leader>sW",
-			"<cmd>lua require('telescope.builtin').grep_string({ cwd = vim.fn.getcwd() })<cr>",
-			mode = "v",
-			desc = "Selection (cwd)",
-		},
 		{
 			"<leader>ss",
 			function()
@@ -157,17 +116,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		-- Function to support trouble plugin if installed
 		local open_with_trouble = function()
 			return vim.cmd.Trouble("telescope")
-		end
-
-		-- Find hidden files handler
-		local find_files_with_hidden = function()
-			local action_state = require("telescope.actions.state")
-			local line = action_state.get_current_line()
-			require("telescope.builtin").find_files({
-				find_command = { "fd", "--type", "f", "--hidden", "--no-ignore-vcs" },
-				prompt_title = "Find Hidden Files Only",
-				default_text = line,
-			})
 		end
 
 		-- Find all files handler
@@ -202,7 +150,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
 					i = {
 						["<c-t>"] = open_with_trouble,
 						["<a-t>"] = open_with_trouble,
-						["<a-h>"] = find_files_with_hidden,
 						["<a-a>"] = find_files_all,
 						["<C-Down>"] = actions.cycle_history_next,
 						["<C-Up>"] = actions.cycle_history_prev,
@@ -249,6 +196,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 				["ui-select"] = {
 					require("telescope.themes").get_dropdown(),
 				},
+				fzf = {},
 			},
 		})
 
@@ -264,7 +212,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		vim.keymap.set("n", "<leader>s/", function()
 			-- You can pass additional configuration to Telescope to change the theme, layout, etc.
 			builtin.current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
-				winblend = 10,
 				previewer = false,
 			}))
 		end, { desc = "[/] Fuzzily search in current buffer" })
