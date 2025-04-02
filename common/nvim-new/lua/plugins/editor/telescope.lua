@@ -69,11 +69,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		},
 		{ "<leader>fFg", "<cmd>Telescope git_files<cr>", desc = "Find Files (git-files)" },
 		{ "<leader>fFr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
-		{
-			"<leader>fFrw",
-			"<cmd>lua require('telescope.builtin').oldfiles({ cwd = vim.fn.getcwd() })<cr>",
-			desc = "Recent Files (cwd)",
-		},
 
 		-- Git
 		{ "<leader>gc", "<cmd>Telescope git_commits<CR>", desc = "Git Commits" },
