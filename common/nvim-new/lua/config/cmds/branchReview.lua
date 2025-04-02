@@ -1,24 +1,66 @@
-local function telescope_select_branch(branches, on_select_fn)
-	-- Get local branches using telescope
-	local telescope_ok, telescope = pcall(require, "telescope.builtin")
+local function dropdown_pick_telescope(opts)
+	local telescope_ok = pcall(require, "telescope.builtin")
 	if not telescope_ok then
 		vim.notify("Telescope is required for this function", vim.log.levels.ERROR)
 		return
 	end
 
-	-- Create picker to select branch
-	vim.ui.select(branches, {
-		prompt = "Select branch to compare against:",
-		telescope = {
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+	local pickers = require("telescope.pickers")
+	local finders = require("telescope.finders")
+	local previewers = require("telescope.previewers")
+	local conf = require("telescope.config").values
+	local dropdown = require("telescope.themes").get_dropdown()
+
+	opts = opts
+		or {
+			prompt_title = "Pick file",
 			initial_mode = "normal",
-		},
-	}, function(selected_branch)
-		if not selected_branch then
-			vim.notify("No branch selected", vim.log.levels.WARN)
-			return
-		end
-		on_select_fn(selected_branch)
-	end)
+			finder = finders.new_table({
+				results = { "change `finder` with your function" },
+			}),
+			sorter = conf.generic_sorter({}),
+		}
+
+	pickers.new(dropdown, opts):find()
+end
+
+local function telescope_select_branch(branches, on_select_fn)
+	-- Create picker to select branch
+	dropdown_pick_telescope({
+		prompt_title = "Select branch to compare against:",
+		initial_mode = "normal",
+		sorter = require("telescope.config").values.generic_sorter({}),
+		finder = require("telescope.finders").new_table({
+			results = branches,
+			entry_maker = function(entry)
+				return {
+					value = entry,
+					display = entry,
+					ordinal = entry,
+					filename = entry,
+				}
+			end,
+		}),
+		attach_mappings = function(prompt_bufnr, map)
+			local actions = require("telescope.actions")
+			local action_state = require("telescope.actions.state")
+
+			actions.select_default:replace(function()
+				actions.close(prompt_bufnr)
+				local selected = action_state.get_selected_entry()
+
+				if not selected then
+					vim.notify("No branch selected", vim.log.levels.ERROR)
+					return
+				end
+
+				on_select_fn(selected.value)
+			end)
+			return true
+		end,
+	})
 end
 
 local function get_branches_list()
@@ -129,52 +171,74 @@ local function open_quickfix_list(qf_items, modified_files, comparison_branch)
 		end
 	end
 
-	local previewers = require("telescope.previewers")
-	-- Define our custom telescope config for vim.ui.select
-	local telescope_config = {
+	dropdown_pick_telescope({
+		prompt_title = "Modified files against " .. comparison_branch .. ":",
 		initial_mode = "normal",
-		previewer = previewers.new_buffer_previewer({
-			title = "Change Summary",
-			define_preview = function(self, entry, status)
-				local content = {}
-				table.insert(content, "")
-				table.insert(content, "Total chunks changed: " .. entry.value.chunks.count)
-				table.insert(content, "")
+		sorter = require("telescope.config").values.generic_sorter({}),
+		finder = require("telescope.finders").new_table({
+			results = file_entries,
 
+			entry_maker = function(entry)
+				return {
+					value = entry,
+					display = function()
+						local function split(s, delimiter)
+							local result = {}
+							for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+								table.insert(result, match)
+							end
+							return result
+						end
+
+						local parts = split(entry.filename, "/")
+						if #parts > 1 then
+							return "..." .. parts[#parts - 1] .. "/" .. parts[#parts]
+						else
+							return entry.filename
+						end
+					end,
+					ordinal = entry.filename,
+					filename = entry.filename,
+				}
+			end,
+		}),
+
+		previewer = require("telescope.previewers").new_buffer_previewer({
+			title = "Changes Summary",
+			define_preview = function(self, entry, status)
 				if entry.value.chunks.count > 0 then
 					vim.api.nvim_buf_set_lines(
 						self.state.bufnr,
 						0,
-						3,
+						1,
 						false,
-						{ "# Total chunks: " .. entry.value.chunks.count, "", "## Changes:" }
+						{ "# Modified Chunks: " .. entry.value.chunks.count }
 					)
-					for i, loc in ipairs(entry.value.chunks.locations) do
-						vim.api.nvim_buf_set_lines(self.state.bufnr, i + 2, i + 3, false, { "- Line " .. loc.lnum })
-					end
 				else
 					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, 1, false, { "no chunk information available" })
 				end
-				return content
 			end,
 		}),
-	}
 
-	vim.ui.select(file_entries, {
-		prompt = "Modified files against " .. comparison_branch .. ":",
-		format_item = function(item)
-			return item.filename
+		attach_mappings = function(prompt_bufnr, map)
+			local actions = require("telescope.actions")
+			local action_state = require("telescope.actions.state")
+
+			actions.select_default:replace(function()
+				actions.close(prompt_bufnr)
+				local selected = action_state.get_selected_entry()
+
+				if not selected then
+					vim.notify("No file selected", vim.log.levels.WARN)
+					return
+				end
+
+				-- Open the selected file
+				vim.cmd("edit " .. selected.value.filename)
+			end)
+			return true
 		end,
-		telescope = telescope_config,
-	}, function(selected)
-		if not selected then
-			vim.notify("No file selected", vim.log.levels.WARN)
-			return
-		end
-
-		-- Open the selected file
-		vim.cmd("edit " .. selected.filename)
-	end)
+	})
 end
 
 local function get_modified_files(comparison_branch)
@@ -227,17 +291,7 @@ local function stop_review_mode()
 	end
 
 	-- Reset Gitsigns base on all open buffers
-	local buffers = vim.api.nvim_list_bufs()
-	for _, buf in ipairs(buffers) do
-		if vim.api.nvim_buf_is_loaded(buf) then
-			vim.api.nvim_buf_call(buf, function()
-				vim.cmd("Gitsigns reset_base")
-			end)
-		end
-	end
-
-	-- Clear the autocommand group
-	vim.api.nvim_del_augroup_by_name("GitSignsModifiedFiles")
+	vim.cmd("Gitsigns reset_base global")
 
 	-- Close and clear quickfix list
 	vim.cmd("Trouble qflist close")
