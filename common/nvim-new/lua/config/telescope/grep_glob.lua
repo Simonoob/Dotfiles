@@ -15,7 +15,7 @@ local live_grep_glob = function(opts)
 				return nil
 			end
 
-			local pieces = vim.split(prompt, "  ")
+			local pieces = vim.split(prompt, " || ")
 			local args = { "rg" }
 			if pieces[1] then
 				table.insert(args, "-e")
@@ -40,7 +40,7 @@ local live_grep_glob = function(opts)
 	pickers
 		.new(opts, {
 			debounce = 100,
-			prompt_title = "Grep (`  ` for glob syntax)",
+			prompt_title = "Grep (` || ` for glob syntax)",
 			finder = finder,
 			previewer = conf.grep_previewer(opts),
 			sorter = require("telescope.sorters").empty(),
