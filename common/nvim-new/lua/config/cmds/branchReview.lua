@@ -48,6 +48,27 @@ local function dropdown_pick_telescope(opts)
 	pickers.new(dropdown, opts):find()
 end
 
+local function stop_review_mode(force)
+	if not branchReview.enabled and not force then
+		vim.notify("Review mode is not enabled", vim.log.levels.WARN)
+		return
+	end
+
+	-- Reset Gitsigns base on all open buffers
+	vim.cmd("Gitsigns reset_base global")
+
+	-- Close and clear quickfix list
+	vim.cmd("Trouble qflist close")
+	vim.fn.setqflist({}, "r")
+
+	-- Reset state
+	branchReview.enabled = false
+	branchReview.comparison_branch = nil
+	update_status_line(false)
+
+	vim.notify("Review mode stopped", vim.log.levels.INFO)
+end
+
 local function telescope_select_branch(branches, on_select_fn)
 	-- Create picker to select branch
 	dropdown_pick_telescope({
@@ -70,12 +91,19 @@ local function telescope_select_branch(branches, on_select_fn)
 				actions.close(prompt_bufnr)
 				local selected = action_state.get_selected_entry()
 
-				if not selected then
+				print("selected.value", selected.value)
+				if not selected.value then
 					vim.notify("No branch selected", vim.log.levels.ERROR)
+					vim.cmd("BranchReview stop")
 					return
 				end
 
 				on_select_fn(selected.value)
+			end)
+			map("n", "<Esc>", function()
+				vim.notify("No branch selected", vim.log.levels.ERROR)
+				actions.close(prompt_bufnr)
+				stop_review_mode(true)
 			end)
 			return true
 		end,
@@ -295,26 +323,6 @@ local function start_review_mode()
 		update_status_line(true)
 		on_branch_selected(selected_branch)
 	end)
-end
-
-local function stop_review_mode()
-	if not branchReview.enabled then
-		vim.notify("Review mode is not enabled", vim.log.levels.WARN)
-		return
-	end
-
-	-- Reset Gitsigns base on all open buffers
-	vim.cmd("Gitsigns reset_base global")
-
-	-- Close and clear quickfix list
-	vim.cmd("Trouble qflist close")
-	vim.fn.setqflist({}, "r")
-
-	-- Reset state
-	branchReview.enabled = false
-	branchReview.comparison_branch = nil
-
-	vim.notify("Review mode stopped", vim.log.levels.INFO)
 end
 
 local valid_commands = { "start", "stop" }
