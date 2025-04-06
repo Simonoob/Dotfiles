@@ -8,6 +8,8 @@ local dropdown = require("telescope.themes").get_dropdown()
 local M = {
 	enabled = false,
 	comparison_branch = nil,
+	files = nil,
+	hunks = nil,
 }
 
 local function get_current_branch()
@@ -15,34 +17,11 @@ local function get_current_branch()
 	return branch
 end
 
--- TODO: instead of taking over the statusline, just add an indicator
--- Simple indicator that doesn't overwrite statusline
-local function update_status_line(enabled)
-	enabled = enabled == nil and M.enabled or enabled
-
-	-- First time enabling - store original statusline
-	if enabled and not M.original_statusline then
-		M.original_statusline = vim.o.statusline
-	end
-
-	if enabled then
-		-- Create a global variable for statusline to use
-		vim.g.branch_review_active = true
-		vim.g.branch_review_current = get_current_branch()
-		vim.g.branch_review_target = M.comparison_branch or "???"
-	else
-		-- Clear indicators
-		vim.g.branch_review_active = false
-		vim.g.branch_review_current = nil
-		vim.g.branch_review_target = nil
-	end
-end
-
 -- Add this to your statusline setup
 -- %{%v:lua.require'branch-review'.get_statusline_indicator()%}
 function M.get_statusline_indicator()
-	if vim.g.branch_review_active then
-		return "[Review 󰘬 " .. vim.g.branch_review_current .. "→" .. vim.g.branch_review_target .. "]"
+	if M.enabled then
+		return "[Review 󰘬 " .. M.current_branch .. "→" .. M.comparison_branch .. "]"
 	else
 		return ""
 	end
@@ -70,7 +49,7 @@ end
 
 local function stop_review_mode(force)
 	if not M.enabled and not force then
-		vim.notify("Review mode is not enabled", vim.log.levels.WARN)
+		vim.notify("Review mode is not ongoing", vim.log.levels.WARN)
 		return
 	end
 
@@ -84,7 +63,7 @@ local function stop_review_mode(force)
 	-- Reset state
 	M.enabled = false
 	M.comparison_branch = nil
-	update_status_line(false)
+	M.current_branch = nil
 
 	vim.notify("Review mode stopped", vim.log.levels.INFO)
 end
@@ -113,7 +92,7 @@ local function telescope_select_branch(branches, on_select_fn)
 
 				print("selected.value", selected.value)
 				if not selected.value then
-					vim.notify("No branch selected", vim.log.levels.ERROR)
+					vim.notify("No branch selected", vim.log.levels.WARN)
 					vim.cmd("BranchReview stop")
 					return
 				end
@@ -156,9 +135,9 @@ local function get_branches_list()
 	return unique_branches
 end
 
-local function handle_gitsigns(comparison_branch)
+local function handle_gitsigns()
 	-- Configure Gitsigns to use the selected branch as base
-	local common_comit = vim.system({ "git", "merge-base", comparison_branch, get_current_branch() }):wait()
+	local common_comit = vim.system({ "git", "merge-base", M.comparison_branch, M.current_branch }):wait()
 	vim.fn.execute(string.format("Gitsigns change_base %s global", common_comit.stdout)) -- vim.cmd gives an error :confused_cat:
 end
 
@@ -193,31 +172,28 @@ local function get_all_modified_chunks(comparison_branch)
 	return modified_chunks
 end
 
-local function add_chunks_to_quickfix(modified_chunks)
+local function add_chunks_to_quickfix()
 	vim.fn.setqflist({}, "r")
-	vim.fn.setqflist(modified_chunks)
+	vim.fn.setqflist(M.hunks)
 end
 
-local function open_modified_files(qf_items, modified_files, comparison_branch)
-	if #qf_items == 0 then
+local function open_modified_files()
+	if #M.hunks == 0 then
 		vim.notify(
-			"Found " .. #modified_files .. " modified files with " .. #qf_items .. " changed chunks",
+			"Found " .. #M.files .. " modified files with " .. #M.hunks .. " changed chunks",
 			vim.log.levels.INFO
 		)
 		return
 	end
 
-	vim.notify(
-		"Found " .. #modified_files .. " modified files with " .. #qf_items .. " changed chunks",
-		vim.log.levels.INFO
-	)
+	vim.notify("Found " .. #M.files .. " modified files with " .. #M.hunks .. " changed chunks", vim.log.levels.INFO)
 
 	-- Create a table for file entries with chunk information
 	local file_entries = {}
 	local file_chunks = {}
 
 	-- Count chunks per file and organize chunk info
-	for _, item in ipairs(qf_items) do
+	for _, item in ipairs(M.hunks) do
 		if not file_chunks[item.filename] then
 			file_chunks[item.filename] = {
 				count = 0,
@@ -229,7 +205,7 @@ local function open_modified_files(qf_items, modified_files, comparison_branch)
 	end
 
 	-- Create entries for selection
-	for _, file in ipairs(modified_files) do
+	for _, file in ipairs(M.files) do
 		if file ~= "" then
 			table.insert(file_entries, {
 				filename = file,
@@ -239,7 +215,7 @@ local function open_modified_files(qf_items, modified_files, comparison_branch)
 	end
 
 	dropdown_pick_telescope({
-		prompt_title = "Modified files against " .. comparison_branch .. ":",
+		prompt_title = "Modified files against " .. M.comparison_branch .. ":",
 		initial_mode = "normal",
 		sorter = require("telescope.config").values.generic_sorter({}),
 		finder = require("telescope.finders").new_table({
@@ -303,37 +279,36 @@ local function get_all_modified_files(comparison_branch)
 end
 
 local function on_branch_selected(comparison_branch)
-	print(M.comparison_branch)
 	-- Pull the selected branch
 	vim.notify("Pulling " .. comparison_branch .. "...", vim.log.levels.INFO)
 	vim.fn.system("git fetch origin " .. comparison_branch .. ":" .. comparison_branch)
 
-	local all_modified_files = get_all_modified_files(comparison_branch)
-	local all_modified_chunks = get_all_modified_chunks(comparison_branch)
+	M.files = get_all_modified_files(comparison_branch)
+	M.hunks = get_all_modified_chunks(comparison_branch)
 
 	handle_gitsigns(comparison_branch)
 
-	add_chunks_to_quickfix(all_modified_chunks)
+	add_chunks_to_quickfix()
 
-	open_modified_files(all_modified_chunks, all_modified_files, comparison_branch)
+	open_modified_files()
 end
 
 local function start_review_mode()
 	if M.enabled then
-		vim.notify("Review mode is already enabled", vim.log.levels.WARN)
+		vim.notify("Review mode is already ongoing", vim.log.levels.WARN)
 		return
 	end
 
 	local branches = get_branches_list()
 	telescope_select_branch(branches, function(selected_branch)
-		M.enabled = true
 		M.comparison_branch = selected_branch
-		update_status_line(true)
+		M.current_branch = get_current_branch()
+		M.enabled = true
 		on_branch_selected(selected_branch)
 	end)
 end
 
-local valid_commands = { "start", "stop" }
+local valid_commands = { "start", "stop", "files" }
 
 -- Function to review changes against a selected branch
 vim.api.nvim_create_user_command("BranchReview", function(opts)
@@ -347,6 +322,12 @@ vim.api.nvim_create_user_command("BranchReview", function(opts)
 		start_review_mode()
 	elseif command == "stop" then
 		stop_review_mode()
+	elseif command == "files" then
+		if M.enabled then
+			open_modified_files()
+		else
+			vim.notify("Review mode must be ongoing", vim.log.levels.ERROR)
+		end
 	else
 		vim.notify("Invalid command. Valid commands are: " .. vim.inspect(valid_commands), vim.log.levels.ERROR)
 	end
@@ -375,10 +356,8 @@ M.setup = function()
 	vim.keymap.set("n", "<leader>gr", function()
 		if M.enabled then
 			vim.cmd("BranchReview stop")
-			update_status_line(false)
 		else
 			vim.cmd("BranchReview start")
-			update_status_line(true)
 		end
 	end, { desc = "Git branch Review toggle" })
 end
