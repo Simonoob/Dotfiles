@@ -2,11 +2,10 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
-local previewers = require("telescope.previewers")
 local conf = require("telescope.config").values
 local dropdown = require("telescope.themes").get_dropdown()
 
-local branchReview = {
+local M = {
 	enabled = false,
 	comparison_branch = nil,
 }
@@ -15,14 +14,17 @@ local function get_current_branch()
 	local branch = vim.fn.system("git branch --show-current | tr -d '\n'")
 	return branch
 end
+
 local original_statusline = vim.o.statusline
+
+-- TODO: instead of taking over the statusline, just add an indicator
 local function update_status_line(enabled)
-	enabled = enabled == nil and branchReview.enabled or enabled
+	enabled = enabled == nil and M.enabled or enabled
 	if enabled then
 		vim.o.statusline = "[BranchReview] checking "
 			.. get_current_branch()
 			.. " against "
-			.. (branchReview.comparison_branch or "???")
+			.. (M.comparison_branch or "???")
 	else
 		vim.o.statusline = original_statusline
 	end
@@ -49,7 +51,7 @@ local function dropdown_pick_telescope(opts)
 end
 
 local function stop_review_mode(force)
-	if not branchReview.enabled and not force then
+	if not M.enabled and not force then
 		vim.notify("Review mode is not enabled", vim.log.levels.WARN)
 		return
 	end
@@ -62,8 +64,8 @@ local function stop_review_mode(force)
 	vim.fn.setqflist({}, "r")
 
 	-- Reset state
-	branchReview.enabled = false
-	branchReview.comparison_branch = nil
+	M.enabled = false
+	M.comparison_branch = nil
 	update_status_line(false)
 
 	vim.notify("Review mode stopped", vim.log.levels.INFO)
@@ -229,19 +231,22 @@ local function open_modified_files(qf_items, modified_files, comparison_branch)
 				return {
 					value = entry,
 					display = function()
-						local function split(s, delimiter)
-							local result = {}
-							for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
-								table.insert(result, match)
-							end
-							return result
+						local display_width = vim.api.nvim_win_get_width(0) - 4 -- Adjust padding
+						local parts = vim.split(entry.filename, "/")
+						local display_name
+						if #parts > 1 then
+							display_name = "..." .. parts[#parts - 1] .. "/" .. parts[#parts]
+						else
+							display_name = entry.filename
 						end
 
-						local parts = split(entry.filename, "/")
-						if #parts > 1 then
-							return "..." .. parts[#parts - 1] .. "/" .. parts[#parts]
+						local chunk_text = "[" .. entry.chunks.count .. " chunks]"
+						local padding = display_width - #display_name - #chunk_text
+
+						if padding > 0 then
+							return display_name .. string.rep(" ", padding) .. chunk_text
 						else
-							return entry.filename
+							return display_name .. " " .. chunk_text
 						end
 					end,
 					ordinal = entry.filename,
@@ -250,27 +255,7 @@ local function open_modified_files(qf_items, modified_files, comparison_branch)
 			end,
 		}),
 
-		previewer = previewers.new_buffer_previewer({
-			title = "Changes Summary",
-			define_preview = function(self, entry, status)
-				if entry.value.chunks.count > 0 then
-					vim.api.nvim_buf_set_lines(
-						self.state.bufnr,
-						0,
-						1,
-						false,
-						{ "# Modified Chunks: " .. entry.value.chunks.count }
-					)
-				else
-					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, 1, false, { "no chunk information available" })
-				end
-			end,
-		}),
-
 		attach_mappings = function(prompt_bufnr, map)
-			local actions = require("telescope.actions")
-			local action_state = require("telescope.actions.state")
-
 			actions.select_default:replace(function()
 				actions.close(prompt_bufnr)
 				local selected = action_state.get_selected_entry()
@@ -281,7 +266,12 @@ local function open_modified_files(qf_items, modified_files, comparison_branch)
 				end
 
 				-- Open the selected file
-				vim.cmd(string.format("edit %s", selected.value.filename))
+				if selected.value.chunks.count > 0 then
+					local first_chunk = selected.value.chunks.locations[1]
+					vim.cmd(string.format("edit +%d %s", first_chunk.lnum, selected.value.filename))
+				else
+					vim.cmd(string.format("edit %s", selected.value.filename))
+				end
 			end)
 			return true
 		end,
@@ -295,7 +285,7 @@ local function get_all_modified_files(comparison_branch)
 end
 
 local function on_branch_selected(comparison_branch)
-	print(branchReview.comparison_branch)
+	print(M.comparison_branch)
 	-- Pull the selected branch
 	vim.notify("Pulling " .. comparison_branch .. "...", vim.log.levels.INFO)
 	vim.fn.system("git fetch origin " .. comparison_branch .. ":" .. comparison_branch)
@@ -311,15 +301,15 @@ local function on_branch_selected(comparison_branch)
 end
 
 local function start_review_mode()
-	if branchReview.enabled then
+	if M.enabled then
 		vim.notify("Review mode is already enabled", vim.log.levels.WARN)
 		return
 	end
 
 	local branches = get_branches_list()
 	telescope_select_branch(branches, function(selected_branch)
-		branchReview.enabled = true
-		branchReview.comparison_branch = selected_branch
+		M.enabled = true
+		M.comparison_branch = selected_branch
 		update_status_line(true)
 		on_branch_selected(selected_branch)
 	end)
@@ -363,9 +353,9 @@ end, {
 	end,
 })
 
-branchReview.setup = function()
+M.setup = function()
 	vim.keymap.set("n", "<leader>gr", function()
-		if branchReview.enabled then
+		if M.enabled then
 			vim.cmd("BranchReview stop")
 			update_status_line(false)
 		else
@@ -375,4 +365,4 @@ branchReview.setup = function()
 	end, { desc = "Git branch Review toggle" })
 end
 
-return branchReview
+return M
