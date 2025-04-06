@@ -21,7 +21,7 @@ end
 -- %{%v:lua.require'branch-review'.get_statusline_indicator()%}
 function M.get_statusline_indicator()
 	if M.enabled then
-		return "[Review 󰘬 " .. M.current_branch .. "→" .. M.comparison_branch .. "]"
+		return string.format("[Review 󰘬 %s → %s]", M.current_branch, M.comparison_branch)
 	else
 		return ""
 	end
@@ -178,15 +178,15 @@ local function add_chunks_to_quickfix()
 end
 
 local function open_modified_files()
-	if #M.hunks == 0 then
-		vim.notify(
-			"Found " .. #M.files .. " modified files with " .. #M.hunks .. " changed chunks",
-			vim.log.levels.INFO
-		)
+	if M.hunks == nil or #M.hunks == 0 then
+		vim.notify("No modified files found - make sure that review mode is ongoing", vim.log.levels.WARN)
 		return
 	end
 
-	vim.notify("Found " .. #M.files .. " modified files with " .. #M.hunks .. " changed chunks", vim.log.levels.INFO)
+	vim.notify(
+		string.format("Found  %s modified files with %s changed chunks", #M.files, #M.hunks),
+		vim.log.levels.INFO
+	)
 
 	-- Create a table for file entries with chunk information
 	local file_entries = {}
@@ -286,7 +286,7 @@ local function on_branch_selected(comparison_branch)
 	M.files = get_all_modified_files(comparison_branch)
 	M.hunks = get_all_modified_chunks(comparison_branch)
 
-	handle_gitsigns(comparison_branch)
+	handle_gitsigns()
 
 	add_chunks_to_quickfix()
 
@@ -323,11 +323,7 @@ vim.api.nvim_create_user_command("BranchReview", function(opts)
 	elseif command == "stop" then
 		stop_review_mode()
 	elseif command == "files" then
-		if M.enabled then
-			open_modified_files()
-		else
-			vim.notify("Review mode must be ongoing", vim.log.levels.ERROR)
-		end
+		open_modified_files()
 	else
 		vim.notify("Invalid command. Valid commands are: " .. vim.inspect(valid_commands), vim.log.levels.ERROR)
 	end
