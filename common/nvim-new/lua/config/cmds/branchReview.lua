@@ -136,13 +136,13 @@ local function get_branches_list()
 	return unique_branches
 end
 
-local function handle_gitsigns(modified_files, comparison_branch)
+local function handle_gitsigns(comparison_branch)
 	-- Configure Gitsigns to use the selected branch as base
-	vim.cmd("Gitsigns change_base " .. get_current_branch() .. "..." .. comparison_branch .. " global") -- TODO: fixme pls it doesn't show any diff atm
-	vim.cmd("Gitsigns refresh")
+	local common_comit = vim.system({ "git", "merge-base", comparison_branch, get_current_branch() }):wait()
+	vim.fn.execute(string.format("Gitsigns change_base %s global", common_comit.stdout)) -- vim.cmd gives an error :confused_cat:
 end
 
-local function get_modified_chunks(comparison_branch)
+local function get_all_modified_chunks(comparison_branch)
 	local diff_output = vim.fn.system("git diff --merge-base " .. comparison_branch .. " --unified=0")
 	local lines = vim.split(diff_output, "\n")
 
@@ -173,12 +173,12 @@ local function get_modified_chunks(comparison_branch)
 	return modified_chunks
 end
 
-local function add_modified_chunks_to_quickfix(modified_chunks)
+local function add_chunks_to_quickfix(modified_chunks)
 	vim.fn.setqflist({}, "r")
 	vim.fn.setqflist(modified_chunks)
 end
 
-local function open_quickfix_list(qf_items, modified_files, comparison_branch)
+local function open_modified_files(qf_items, modified_files, comparison_branch)
 	if #qf_items == 0 then
 		vim.notify(
 			"Found " .. #modified_files .. " modified files with " .. #qf_items .. " changed chunks",
@@ -281,14 +281,14 @@ local function open_quickfix_list(qf_items, modified_files, comparison_branch)
 				end
 
 				-- Open the selected file
-				vim.cmd("edit " .. selected.value.filename)
+				vim.cmd(string.format("edit %s", selected.value.filename))
 			end)
 			return true
 		end,
 	})
 end
 
-local function get_modified_files(comparison_branch)
+local function get_all_modified_files(comparison_branch)
 	local modified_files_output = vim.fn.system("git diff --name-only --merge-base " .. comparison_branch)
 	local modified_files = vim.split(modified_files_output, "\n")
 	return modified_files
@@ -300,14 +300,14 @@ local function on_branch_selected(comparison_branch)
 	vim.notify("Pulling " .. comparison_branch .. "...", vim.log.levels.INFO)
 	vim.fn.system("git fetch origin " .. comparison_branch .. ":" .. comparison_branch)
 
-	local modified_files = get_modified_files(comparison_branch)
-	local modified_chunks = get_modified_chunks(comparison_branch)
+	local all_modified_files = get_all_modified_files(comparison_branch)
+	local all_modified_chunks = get_all_modified_chunks(comparison_branch)
 
-	add_modified_chunks_to_quickfix(modified_chunks)
+	handle_gitsigns(comparison_branch)
 
-	open_quickfix_list(modified_chunks, modified_files, comparison_branch)
+	add_chunks_to_quickfix(all_modified_chunks)
 
-	handle_gitsigns(modified_files, comparison_branch)
+	open_modified_files(all_modified_chunks, all_modified_files, comparison_branch)
 end
 
 local function start_review_mode()
