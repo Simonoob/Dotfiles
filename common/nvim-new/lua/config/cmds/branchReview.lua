@@ -15,18 +15,36 @@ local function get_current_branch()
 	return branch
 end
 
-local original_statusline = vim.o.statusline
-
 -- TODO: instead of taking over the statusline, just add an indicator
+-- Simple indicator that doesn't overwrite statusline
 local function update_status_line(enabled)
 	enabled = enabled == nil and M.enabled or enabled
+
+	-- First time enabling - store original statusline
+	if enabled and not M.original_statusline then
+		M.original_statusline = vim.o.statusline
+	end
+
 	if enabled then
-		vim.o.statusline = "[BranchReview] checking "
-			.. get_current_branch()
-			.. " against "
-			.. (M.comparison_branch or "???")
+		-- Create a global variable for statusline to use
+		vim.g.branch_review_active = true
+		vim.g.branch_review_current = get_current_branch()
+		vim.g.branch_review_target = M.comparison_branch or "???"
 	else
-		vim.o.statusline = original_statusline
+		-- Clear indicators
+		vim.g.branch_review_active = false
+		vim.g.branch_review_current = nil
+		vim.g.branch_review_target = nil
+	end
+end
+
+-- Add this to your statusline setup
+-- %{%v:lua.require'branch-review'.get_statusline_indicator()%}
+function M.get_statusline_indicator()
+	if vim.g.branch_review_active then
+		return "[Review 󰘬 " .. vim.g.branch_review_current .. "→" .. vim.g.branch_review_target .. "]"
+	else
+		return ""
 	end
 end
 
