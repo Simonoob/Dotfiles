@@ -18,12 +18,14 @@ local lua_snip = {
 			"rafamadriz/friendly-snippets",
 			config = function()
 				require("luasnip.loaders.from_vscode").lazy_load()
+				require("luasnip.loaders.from_lua").load({ paths = { "~/.config/nvim/lua/plugins/code/snippets/" } })
 			end,
 		},
 	},
 	opts = {
 		history = true,
 		delete_check_events = "TextChanged",
+		update_events = "TextChanged,TextChangedI",
 	},
 }
 
