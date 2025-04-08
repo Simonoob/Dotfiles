@@ -43,11 +43,19 @@ return {
 		"hrsh7th/cmp-path",
 		"hrsh7th/cmp-nvim-lsp-signature-help",
 	},
+
 	config = function()
 		-- See `:help cmp`
 		local cmp = require("cmp")
 		local luasnip = require("luasnip")
 		luasnip.config.setup({})
+
+		cmp.setup.cmdline(":", {
+			enabled = false,
+		})
+		cmp.setup.cmdline("/", {
+			enabled = false,
+		})
 
 		cmp.setup({
 			snippet = {
