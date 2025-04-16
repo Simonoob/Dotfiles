@@ -104,11 +104,7 @@ local lsp_config = {
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
 				if
 					client
-					and client_supports_method(
-						client,
-						vim.lsp.protocol.Methods.textDocument_documentHighlight,
-						event.buf
-					)
+					and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
 				then
 					local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -139,10 +135,7 @@ local lsp_config = {
 				-- code, if the language server you are using supports them
 				--
 				-- This may be unwanted, since they displace some of your code
-				if
-					client
-					and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
-				then
+				if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
 					map("<leader>th", function()
 						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
 					end, "[T]oggle Inlay [H]ints")
@@ -244,6 +237,7 @@ local lsp_config = {
 			"stylua", -- Used to format Lua code
 			"eslint_d",
 			"prettierd",
+			"ruff",
 		})
 		require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -252,12 +246,13 @@ local lsp_config = {
 			automatic_installation = false,
 			handlers = {
 				function(server_name)
-					local server = servers[server_name] or {}
+					local server_options = servers[server_name] or {}
 					-- This handles overriding only values explicitly passed
 					-- by the server configuration above. Useful when disabling
 					-- certain features of an LSP (for example, turning off formatting for ts_ls)
-					server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-					require("lspconfig")[server_name].setup(server)
+					server_options.capabilities =
+						vim.tbl_deep_extend("force", {}, capabilities, server_options.capabilities or {})
+					require("lspconfig")[server_name].setup(server_options)
 				end,
 			},
 		})
