@@ -1,1 +1,1 @@
-require("config.cmds.branchReview").setup()
+require("config.cmds.branch_review").setup()

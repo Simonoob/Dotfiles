@@ -39,3 +39,19 @@ vim.keymap.set("n", "grt", vim.lsp.buf.type_definition, { desc = "type definitio
 vim.keymap.set("n", "grd", vim.lsp.buf.definition, { desc = "definition" })
 vim.keymap.set("n", "grD", vim.lsp.buf.declaration, { desc = "declaration" })
 vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, { desc = "signature help" })
+
+-- visual indents
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right" })
+
+-- global marks
+local prefixes = "m'"
+local letters = "abcdefghijklmnopqrstuvwxyz"
+for i = 1, #prefixes do
+  local prefix = prefixes:sub(i, i)
+  for j = 1, #letters do
+    local lower_letter = letters:sub(j, j)
+    local upper_letter = string.upper(lower_letter)
+    vim.keymap.set({ "n", "v" }, prefix .. lower_letter, prefix .. upper_letter, { desc = "Mark " .. upper_letter })
+  end
+end
