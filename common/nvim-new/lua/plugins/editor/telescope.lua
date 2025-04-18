@@ -48,7 +48,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
       "<cmd>Telescope buffers sort_mru=true sort_lastused=true ignore_current_buffer=true<cr>",
       desc = "Buffers",
     },
-    { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
     { "<leader>fF", "", desc = "+ Find Files" },
     {
       "<leader>fFw",
@@ -86,7 +85,6 @@ return { -- Fuzzy Finder (files, lsp, etc)
     { "<leader>sk", "<cmd>Telescope keymaps<cr>", desc = "Key Maps" },
     { "<leader>sl", "<cmd>Telescope loclist<cr>", desc = "Location List" },
     { "<leader>sM", "<cmd>Telescope man_pages<cr>", desc = "Man Pages" },
-    { "<leader>sm", "<cmd>Telescope marks<cr>", desc = "Jump to Mark" },
     { "<leader>so", "<cmd>Telescope vim_options<cr>", desc = "Options" },
     { "<leader>fr", "<cmd>Telescope resume<cr>", desc = "Resume" },
     { "<leader>sq", "<cmd>Telescope quickfix<cr>", desc = "Quickfix List" },
