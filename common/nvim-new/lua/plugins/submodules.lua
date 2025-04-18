@@ -1,8 +1,8 @@
 return {
-	{
-		import = "plugins.editor",
-	},
-	{
-		import = "plugins.code",
-	},
+  {
+    import = "plugins.editor",
+  },
+  {
+    import = "plugins.code",
+  },
 }

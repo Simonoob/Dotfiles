@@ -10,5 +10,5 @@ local fmta = require("luasnip.extras.fmt").fmta
 local rep = require("luasnip.extras").rep
 
 return {
-	s({ trig = "test" }, { ls.text_node("test snippet") }),
+  s({ trig = "test" }, { ls.text_node("test snippet") }),
 }

@@ -10,16 +10,16 @@ local fmta = require("luasnip.extras.fmt").fmta
 local rep = require("luasnip.extras").rep
 
 return {
-	-- media query in styled componenent
-	s(
-		{ trig = "@media", dscr = "media query" },
-		fmta(
-			[[
+  -- media query in styled componenent
+  s(
+    { trig = "@media", dscr = "media query" },
+    fmta(
+      [[
 	@media ${(props) =>> props.theme.device.<>} {
 		<>
 	}
     ]],
-			{ i(1, "desktop"), i(0) }
-		)
-	),
+      { i(1, "desktop"), i(0) }
+    )
+  ),
 }
