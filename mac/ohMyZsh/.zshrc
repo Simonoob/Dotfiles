@@ -71,9 +71,9 @@ ZSH_THEME="spaceship"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-	git
-	zsh-syntax-highlighting
-  asdf
+    git
+    zsh-syntax-highlighting
+    asdf
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -109,17 +109,14 @@ alias nvim-test="~/.config/nvim-test"
 
 alias stop-local-postgres='sudo -u postgres /Library/PostgreSQL/16/bin/pg_ctl -D /Library/PostgreSQL/16/data stop'
 
-
 # Mamma script aliases
 alias mamma-script/comparison-new-prices-sync='npm run script:convertNewPricesSheetsToTs -- --sheets ~/Downloads/comparison-to-new-prices/iPhones\ sold\ by\ Apple\ \(Oct_2023\)\ -\ Data\ *'
-
 
 export PATH=$HOME/bin:/usr/local/bin:$PATH #add bin folder to PATH
 
 # eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) #homebrew
 
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
-
 
 # Herd injected NVM configuration
 # export NVM_DIR="/Users/simonoob/Library/Application Support/Herd/config/nvm"
@@ -130,12 +127,11 @@ export PATH=$HOME/bin:/usr/local/bin:$PATH #add bin folder to PATH
 # Herd injected PHP 8.3 configuration.
 # export HERD_PHP_83_INI_SCAN_DIR="/Users/simonoob/Library/Application Support/Herd/config/php/83/"
 
- # ejson keydir
+# ejson keydir
 export EJSON_KEYDIR=~/.ejson
 
 # Herd injected PHP binary.
 # export PATH="/Users/simonoob/Library/Application Support/Herd/bin/":$PATH
-
 
 # Herd injected PHP 8.4 configuration.
 # export HERD_PHP_84_INI_SCAN_DIR="/Users/simonoob/Library/Application Support/Herd/config/php/84/"
@@ -157,7 +153,6 @@ if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc' ]; then . '/
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc'; fi
-
 
 alias work="timer 40m && say 'time for a break' \
                 && terminal-notifier -message 'Pomodoro'\
@@ -181,3 +176,8 @@ pomo(){
                 rest;
         done
 }
+
+# add doom emacs to the PATH
+export PATH=$HOME/.config/emacs/bin:$PATH
+alias emacs="emacsclient -c -a=''"
+
