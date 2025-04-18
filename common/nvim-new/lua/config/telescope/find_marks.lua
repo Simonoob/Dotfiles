@@ -21,7 +21,7 @@ local find_marks = function(opts)
 
     local mark_symbol = mark.mark:sub(2) -- Remove the ' prefix
 
-    if string.match(mark_symbol, "%w") == nil then -- Skip marks that are not defined by the user
+    if string.match(mark_symbol, "%a") == nil then -- Skip marks that are not defined by the user
       return
     end
 

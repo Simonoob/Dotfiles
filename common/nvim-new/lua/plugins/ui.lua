@@ -80,6 +80,30 @@ local show_marks = {
         desc = "Delete local marks",
       },
       {
+        "m",
+        function()
+          -- Get the next character that will be input
+          local char = vim.fn.getcharstr()
+          if char == "" then
+            return
+          end -- User cancelled input
+
+          -- Check if mark exists
+          local mark_pos = vim.fn.getpos("'" .. char)
+          if mark_pos[2] > 0 then -- Mark exists
+            -- Ask for confirmation
+            local confirm = vim.fn.input(string.format("Mark '%s' already exists. Override? [y/N] ", char))
+            if confirm:lower() ~= "y" then
+              return
+            end
+          end
+
+          -- Set the mark
+          vim.cmd("normal! m" .. char)
+        end,
+        desc = "Set a mark",
+      },
+      {
         "<leader>mD",
         "<cmd>delmarks A-Za-b0-9<cr>",
         desc = "Delete all marks",
