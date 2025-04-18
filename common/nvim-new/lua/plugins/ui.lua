@@ -67,6 +67,7 @@ local show_marks = {
     -- set                    -- Sets a letter mark (will wait for input).
     -- delete                 -- Delete a letter mark (will wait for input).
     default_mappings = false,
+    sign_priority = 10, -- Higher priority than gitsigns (which uses default priority)
   },
   config = function(_, opts)
     require("marks").setup(opts)
@@ -88,18 +89,27 @@ local show_marks = {
             return
           end -- User cancelled input
 
-          -- Check if mark exists
-          local mark_pos = vim.fn.getpos("'" .. char)
-          if mark_pos[2] > 0 then -- Mark exists
-            -- Ask for confirmation
-            local confirm = vim.fn.input(string.format("Mark '%s' already exists. Override? [y/N] ", char))
-            if confirm:lower() ~= "y" then
-              return
-            end
+          local function set_mark(mark)
+            -- Set the mark
+            return vim.cmd("normal! m" .. mark)
           end
 
-          -- Set the mark
-          vim.cmd("normal! m" .. char)
+          -- Check if mark exists
+          local mark_pos = vim.fn.getpos("'" .. char)
+          if mark_pos[2] <= 0 then -- Mark doesn't exist
+            return set_mark(char)
+          end
+
+          -- ask for confirmation
+          vim.ui.select({ "abort", "overwrite", "view" }, {
+            prompt = string.format("Mark '%s' already exists", char),
+          }, function(choice)
+            if choice == "overwrite" then
+              return set_mark(char)
+            elseif choice == "view" then
+              vim.cmd(string.format("normal! '%s", char))
+            end
+          end)
         end,
         desc = "Set a mark",
       },
