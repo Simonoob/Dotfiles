@@ -5,11 +5,21 @@ function M.modified()
   return vim.bo.modified and "●" or ""
 end
 
+function M.git_branch()
+  local branch = string.sub(vim.fn.system("git branch --show-current"), 0, -2)
+  return "󰘬 " .. branch
+end
+
 -- List of components to add to the statusline
 M.components = {
   "%f", -- filename -tail
-  "%=", -- split the following items to the right
   M.modified, -- is file modified?
+  -- "%l", -- line
+  -- "%c", -- column
+  "%p%%", -- % of file
+  "%y", -- filetype
+  M.git_branch, -- current branch
+  "%=", -- split the following items to the right
   require("config.cmds.branch_review").get_statusline_indicator,
 }
 
