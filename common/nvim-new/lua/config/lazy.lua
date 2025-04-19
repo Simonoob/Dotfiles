@@ -32,7 +32,7 @@ require("lazy").setup({
   -- automatically check for plugin updates
   checker = {
     enabled = true,
-    frequency = 60 * 60 * 24, -- 60s * 60min * 24h
+    frequency = 60 * 60 * 24 * 7, -- 60s * 60min * 24h * 7d
   },
 }, {
   ui = {
