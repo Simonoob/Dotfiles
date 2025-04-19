@@ -205,6 +205,13 @@ local progress_and_notify_ui = {
   },
 }
 
+local scrolloff_eof = {
+  -- keep the "scolloff" behaviour also at the end of the file
+  "Aasim-A/scrollEOF.nvim",
+  event = { "CursorMoved", "WinScrolled" },
+  opts = {},
+}
+
 return {
   colorscheme,
   highlight_comments,
@@ -212,4 +219,5 @@ return {
   snacks,
   highlight_matching_parenthesis,
   progress_and_notify_ui,
+  scrolloff_eof,
 }
