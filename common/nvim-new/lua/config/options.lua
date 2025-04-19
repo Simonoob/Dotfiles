@@ -1,7 +1,3 @@
--- ************
--- THIS FILE IS REQUIRED IN `config/lazy.lua` - DO NOT REQUIRE IT IN `init.lua`
--- ************
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -12,9 +8,7 @@ vim.g.maplocalleader = " "
 vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
--- See `:help vim.opt`
--- NOTE: You can change these options as you wish!
---  For more options, you can see `:help option-list`
+-- NOTE: For more options, you can see `:help option-list`
 
 -- make colors crispier
 vim.opt.termguicolors = true
