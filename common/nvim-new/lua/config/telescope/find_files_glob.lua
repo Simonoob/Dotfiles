@@ -14,7 +14,7 @@ local find_files_glob = function(opts)
       prompt = prompt or ""
       local args = { "rg", "--files", "--color=never" }
 
-      table.insert(args, "-g")
+      table.insert(args, "--iglob")
       -- TODO: implement the --exact fuction
       -- if string.find(prompt, " --exact") then
       --   table.insert(args, string.gsub(prompt, " %-%-exact", "")[1])
