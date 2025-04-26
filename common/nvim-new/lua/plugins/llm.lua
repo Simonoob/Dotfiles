@@ -42,7 +42,17 @@ local ai_agent = {
           chat = true,
           command = true,
           model = { model = "gpt-4o" },
-          system_prompt = "Start any answer with with just: Sure thing..",
+          system_prompt = [[
+            for lua code, use lua 5.1
+            for neovim api, use nvim 0.11
+
+            if you need more context, return a cli command to get the context from files in the current project.
+            use ripgrep heavily to search for the context, with the rg command.
+            format command requests as following:
+            # command request start
+            <command> <args>
+            # command request end
+          ]],
         },
       },
     }
