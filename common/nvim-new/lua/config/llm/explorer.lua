@@ -56,6 +56,22 @@ local function extract_shell_commands(lines)
   return commands
 end
 
+local function run_cmd_and_append_output(cmd, chat_buffer)
+  local handle = io.popen(cmd)
+  local result = handle:read("*a")
+  handle:close()
+
+  local formatted_result = string.format("```\n%s\n%s\n```", cmd, result)
+  -- local lines = vim.api.nvim_buf_get_lines(chat_buffer, -1, -1, false)
+  -- table.insert(lines, formatted_result)
+
+  -- for each line in formatted_result, append it to the chat buffer
+  local formatted_lines = vim.split(formatted_result, "\n")
+  for _, line in ipairs(formatted_lines) do
+    vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, { line })
+  end
+end
+
 vim.api.nvim_create_autocmd({ "User" }, {
   pattern = { "GpDone" },
   callback = function(event)
@@ -74,49 +90,25 @@ vim.api.nvim_create_autocmd({ "User" }, {
     end
 
     for _, cmd in ipairs(commands) do
-      -- select if you want to execute the command
-      vim.ui.select({ "Modify and execute", "Reject" }, { prompt = "Choose action for: " .. cmd }, function(choice)
-        if choice == "Modify and execute" then
-          -- modify and run command
-          vim.ui.input({ prompt = "Modify command: ", default = cmd }, function(modified_cmd)
-            if not modified_cmd then
-              return -- User cancelled
-            end
+      -- if command is a read-only command (like find, rg, cat), run it without confirmation
+      if cmd:match("^find") or cmd:match("^rg") or cmd:match("^cat") then
+        print("read-only command found: " .. cmd)
+        run_cmd_and_append_output(cmd, chat_buffer)
+      else
+        -- select if you want to execute the command
+        vim.ui.select({ "Modify and execute", "Reject" }, { prompt = "Choose action for: " .. cmd }, function(choice)
+          if choice == "Modify and execute" then
+            -- modify and run command
+            vim.ui.input({ prompt = "Modify command: ", default = cmd }, function(modified_cmd)
+              if not modified_cmd then
+                return -- User cancelled
+              end
 
-            local handle = io.popen(modified_cmd)
-            local result = handle:read("*a")
-            handle:close()
-
-            local formatted_result = string.format("```\n%s\n%s\n```", modified_cmd, result)
-            -- local lines = vim.api.nvim_buf_get_lines(chat_buffer, -1, -1, false)
-            -- table.insert(lines, formatted_result)
-
-            -- for each line in formatted_result, append it to the chat buffer
-            local formatted_lines = vim.split(formatted_result, "\n")
-            for _, line in ipairs(formatted_lines) do
-              vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, { line })
-            end
-
-            -- vim.system(
-            --   -- split modified_cmd string into a table of args
-            --   vim.split(modified_cmd, " "),
-            --   {},
-            --   function(output)
-            --     print("Command executed: " .. modified_cmd .. vim.inspect(output))
-            --     if output.code ~= 0 then
-            --       print("Error executing command: " .. modified_cmd)
-            --       print("Error: " .. output.stderr)
-            --       return
-            --     end
-            --     local formatted_result = string.format("```\n%s\n%s\n```", modified_cmd, output.stdout)
-            --     local lines = vim.api.nvim_buf_get_lines(chat_buffer, -1, -1, false)
-            --     table.insert(lines, formatted_result)
-            --     vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, lines)
-            --   end
-            -- )
-          end)
-        end
-      end)
+              run_cmd_and_append_output(modified_cmd, chat_buffer)
+            end)
+          end
+        end)
+      end
     end
   end,
 })
