@@ -73,29 +73,47 @@ vim.api.nvim_create_autocmd({ "User" }, {
       return
     end
 
-    -- for each command, prompt the user to modify and execute it or to reject it
-    -- use vim.ui.select for prompt the user, the options are:
-    -- 1. Modify and execute
-    -- 2. Reject
-    -- on select, open a prompt to modify the command
-    -- if reject, do nothing and continue to the next command
-    -- if modify and execute, run the command and print the result in the chat buffer
-    -- format the result as the fllowing:
-    -- ```
-    -- <command>
-    -- <result>
-    -- ```
-
     for _, cmd in ipairs(commands) do
+      -- select if you want to execute the command
       vim.ui.select({ "Modify and execute", "Reject" }, { prompt = "Choose action for: " .. cmd }, function(choice)
         if choice == "Modify and execute" then
+          -- modify and run command
           vim.ui.input({ prompt = "Modify command: ", default = cmd }, function(modified_cmd)
-            if modified_cmd then
-              -- execute the shell command in a separate process, capture the output and append it to the chat buffer.
-              -- make sure to not block the UI and update the buffer in a non-blocking way - write an update to the buffer while the command is running
-              local formatted_result = "```\n" .. modified_cmd .. "\n" .. result .. "```"
-              vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, { formatted_result })
+            if not modified_cmd then
+              return -- User cancelled
             end
+
+            local handle = io.popen(modified_cmd)
+            local result = handle:read("*a")
+            handle:close()
+
+            local formatted_result = string.format("```\n%s\n%s\n```", modified_cmd, result)
+            -- local lines = vim.api.nvim_buf_get_lines(chat_buffer, -1, -1, false)
+            -- table.insert(lines, formatted_result)
+
+            -- for each line in formatted_result, append it to the chat buffer
+            local formatted_lines = vim.split(formatted_result, "\n")
+            for _, line in ipairs(formatted_lines) do
+              vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, { line })
+            end
+
+            -- vim.system(
+            --   -- split modified_cmd string into a table of args
+            --   vim.split(modified_cmd, " "),
+            --   {},
+            --   function(output)
+            --     print("Command executed: " .. modified_cmd .. vim.inspect(output))
+            --     if output.code ~= 0 then
+            --       print("Error executing command: " .. modified_cmd)
+            --       print("Error: " .. output.stderr)
+            --       return
+            --     end
+            --     local formatted_result = string.format("```\n%s\n%s\n```", modified_cmd, output.stdout)
+            --     local lines = vim.api.nvim_buf_get_lines(chat_buffer, -1, -1, false)
+            --     table.insert(lines, formatted_result)
+            --     vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, lines)
+            --   end
+            -- )
           end)
         end
       end)
@@ -105,7 +123,14 @@ vim.api.nvim_create_autocmd({ "User" }, {
 
 -- Keymaps for easy access
 function M.setup()
-  -- vim.keymap.set("n", "<leader>rr", M.start_refactor_chat, { desc = "Start refactoring chat" })
+  vim.keymap.set("n", "<leader>rr", function()
+    local handle = io.popen([[
+rg -g '**/explorer.lua' --files $(git rev-parse --show-toplevel) 
+]])
+    local result = handle:read("*a")
+    handle:close()
+    print("Command executed: " .. vim.inspect(result))
+  end, { desc = "Start refactoring chat" })
 end
 
 return M
