@@ -65,7 +65,7 @@ local function run_cmd_and_append_output(cmd, chat_buffer)
   local folding_start = "{{{"
   local folding_end = "}}}"
 
-  local formatted_result = string.format("```\n%s\n%s\n%s\n%s\n```", cmd, folding_start, result, folding_end)
+  local formatted_result = string.format("`\n%s`\n%s\n```\n%s\n```\n%s", cmd, folding_start, result, folding_end)
 
   -- Split the folding content into lines
   local formatted_lines = vim.split(formatted_result, "\n")
@@ -77,7 +77,10 @@ local function run_cmd_and_append_output(cmd, chat_buffer)
   vim.api.nvim_buf_set_option(chat_buffer, "foldmethod", "marker")
   vim.api.nvim_buf_set_option(chat_buffer, "foldlevel", 0) -- Close all folds by default
 
-  vim.cmd("GpChatRespond")
+  -- schedule the next command
+  vim.schedule(function()
+    vim.cmd("GpChatRespond")
+  end)
 end
 
 vim.api.nvim_create_autocmd({ "User" }, {
@@ -99,8 +102,7 @@ vim.api.nvim_create_autocmd({ "User" }, {
 
     for _, cmd in ipairs(commands) do
       -- if command is a read-only command (like find, rg, cat), run it without confirmation
-      if cmd:match("^find") or cmd:match("^rg") or cmd:match("^cat") then
-        print("read-only command found: " .. cmd)
+      if cmd:match("^find") or cmd:match("^rg") or cmd:match("^cat") or cmd:match("^sed") then
         run_cmd_and_append_output(cmd, chat_buffer)
       else
         -- select if you want to execute the command
