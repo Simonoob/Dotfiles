@@ -61,15 +61,23 @@ local function run_cmd_and_append_output(cmd, chat_buffer)
   local result = handle:read("*a")
   handle:close()
 
-  local formatted_result = string.format("```\n%s\n%s\n```", cmd, result)
-  -- local lines = vim.api.nvim_buf_get_lines(chat_buffer, -1, -1, false)
-  -- table.insert(lines, formatted_result)
+  -- Use folding markers for the code block to make it foldable
+  local folding_start = "{{{"
+  local folding_end = "}}}"
 
-  -- for each line in formatted_result, append it to the chat buffer
+  local formatted_result = string.format("```\n%s\n%s\n%s\n%s\n```", cmd, folding_start, result, folding_end)
+
+  -- Split the folding content into lines
   local formatted_lines = vim.split(formatted_result, "\n")
   for _, line in ipairs(formatted_lines) do
     vim.api.nvim_buf_set_lines(chat_buffer, -1, -1, false, { line })
   end
+
+  -- Configure foldmethod for the buffer
+  vim.api.nvim_buf_set_option(chat_buffer, "foldmethod", "marker")
+  vim.api.nvim_buf_set_option(chat_buffer, "foldlevel", 0) -- Close all folds by default
+
+  vim.cmd("GpChatRespond")
 end
 
 vim.api.nvim_create_autocmd({ "User" }, {
