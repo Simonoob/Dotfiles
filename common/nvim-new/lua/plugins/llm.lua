@@ -59,12 +59,14 @@ local ai_agent = {
             <command> <args>
             # command request end
 
+            when running commands be mindful of the output length.
+            if you expect a long output, narrow it down to the minimum needed.
 
-            to get the file structure from a specific directory, use the command:
-            find <target-directory> | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
 
             to get the current working directory, use the command:
+            # command request start
             pwd 
+            # command request end
 
             to get the root of the current git project, use the command:
             git rev-parse --show-toplevel 
@@ -75,11 +77,6 @@ local ai_agent = {
             rg -n 'foo' $(git rev-parse --show-toplevel) 
             # command request end
 
-
-            e.g. check the file and folder structure of the current git project (respecting .gitignore):
-            # command request start 
-            git ls-files --others --cached --exclude-standard | sed -e "s|$(git rev-parse --show-toplevel)/||" | sort | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-            # command request end
           ]],
         },
       },

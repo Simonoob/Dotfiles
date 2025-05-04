@@ -43,14 +43,19 @@ end
 
 local function extract_shell_commands(lines)
   local commands = {}
+  local current_command = {}
   local is_command_request = false
   for _, line in ipairs(lines) do
     if line:match("^# command request start") then
       is_command_request = true
+      current_command = {}
     elseif line:match("^# command request end") then
       is_command_request = false
+      if #current_command > 0 then
+        table.insert(commands, table.concat(current_command, "\n"))
+      end
     elseif is_command_request then
-      table.insert(commands, line)
+      table.insert(current_command, line)
     end
   end
   return commands
@@ -65,7 +70,8 @@ local function run_cmd_and_append_output(cmd, chat_buffer)
   local folding_start = "{{{"
   local folding_end = "}}}"
 
-  local formatted_result = string.format("`\n%s`\n%s\n```\n%s\n```\n%s", cmd, folding_start, result, folding_end)
+  -- Format the command and its output
+  local formatted_result = string.format("```bash\n%s\n```\n%s\n```\n%s\n```\n%s", cmd, folding_start, result, folding_end)
 
   -- Split the folding content into lines
   local formatted_lines = vim.split(formatted_result, "\n")
@@ -83,6 +89,48 @@ local function run_cmd_and_append_output(cmd, chat_buffer)
   end)
 end
 
+local function edit_command_in_buffer(cmd, callback)
+  -- Create a temporary buffer
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(buf, "filetype", "bash")
+  vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
+  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+  vim.api.nvim_buf_set_option(buf, "swapfile", false)
+
+  -- Split the command into lines and set them in the buffer
+  local lines = vim.split(cmd, "\n")
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+  -- Create a window for the buffer
+  local width = math.min(80, vim.o.columns - 4)
+  local height = math.min(20, vim.o.lines - 4)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    col = (vim.o.columns - width) / 2,
+    row = (vim.o.lines - height) / 2,
+    style = "minimal",
+    border = "rounded",
+  })
+
+  -- Set up keymaps for the buffer
+  vim.api.nvim_buf_set_keymap(buf, "n", "<CR>", ":wq<CR>", { silent = true })
+  vim.api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":q!<CR>", { silent = true })
+
+  -- Wait for the window to close
+  vim.api.nvim_create_autocmd("BufWipeout", {
+    buffer = buf,
+    once = true,
+    callback = function()
+      -- Get the modified command
+      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+      local modified_cmd = table.concat(lines, "\n")
+      callback(modified_cmd)
+    end,
+  })
+end
+
 vim.api.nvim_create_autocmd({ "User" }, {
   pattern = { "GpDone" },
   callback = function(event)
@@ -92,7 +140,6 @@ vim.api.nvim_create_autocmd({ "User" }, {
     end
 
     local chat_buffer = event.buf
-
     local commands = extract_shell_commands(get_latest_response(chat_buffer))
 
     if #commands == 0 then
@@ -102,19 +149,16 @@ vim.api.nvim_create_autocmd({ "User" }, {
 
     for _, cmd in ipairs(commands) do
       -- if command is a read-only command (like find, rg, cat), run it without confirmation
-      if cmd:match("^find") or cmd:match("^rg") or cmd:match("^cat") or cmd:match("^sed") then
+      if cmd:match("^find") or cmd:match("^rg") or cmd:match("^cat") or cmd:match("^sed") or cmd:match("^head") then
         run_cmd_and_append_output(cmd, chat_buffer)
       else
         -- select if you want to execute the command
         vim.ui.select({ "Modify and execute", "Reject" }, { prompt = "Choose action for: " .. cmd }, function(choice)
           if choice == "Modify and execute" then
-            -- modify and run command
-            vim.ui.input({ prompt = "Modify command: ", default = cmd }, function(modified_cmd)
-              if not modified_cmd then
-                return -- User cancelled
+            edit_command_in_buffer(cmd, function(modified_cmd)
+              if modified_cmd then
+                run_cmd_and_append_output(modified_cmd, chat_buffer)
               end
-
-              run_cmd_and_append_output(modified_cmd, chat_buffer)
             end)
           end
         end)
