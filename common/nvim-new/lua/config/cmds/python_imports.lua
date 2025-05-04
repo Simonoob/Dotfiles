@@ -300,7 +300,6 @@ function M.process_found_imports(resolvable_imports, undefined_names)
   end
 
   -- Function to add import statements to the buffer
-  -- TODO: debug text insertion location
   local function add_imports_to_buffer(imports_to_add)
     local bufnr = vim.api.nvim_get_current_buf()
     local current_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -326,56 +325,13 @@ function M.process_found_imports(resolvable_imports, undefined_names)
       return
     end
 
-    -- Find the line number after the last existing import statement
-    -- Or 0 if no imports are found
-    local insert_line = 0
-    for i, line in ipairs(current_lines) do
-      -- Basic check for import statements (can be improved)
-      if line:match("^%s*import%s+") or line:match("^%s*from%s+") then
-        insert_line = i
-      end
-    end
-
-    -- Adjust insert_line to be 0-indexed for the API call
-    local api_insert_line = math.max(0, insert_line)
-
-    -- Prepare the lines to insert, potentially adding newlines for spacing
     local lines_to_insert = {}
-    local needs_leading_newline = false
-    local needs_trailing_newline = false
-
-    -- Add newline before new imports if inserting after existing code/imports
-    if api_insert_line > 0 then
-      local line_before = current_lines[api_insert_line] -- Line *before* insertion point (1-based index)
-      if line_before and vim.trim(line_before) ~= "" then
-        needs_leading_newline = true
-      end
-    end
-
-    -- Add newline after new imports if there's code immediately following
-    if #current_lines > api_insert_line then
-      local line_after = current_lines[api_insert_line + 1] -- Line *at* insertion point (1-based index)
-      if
-        line_after
-        and vim.trim(line_after) ~= ""
-        and not (line_after:match("^%s*import%s+") or line_after:match("^%s*from%s+"))
-      then
-        needs_trailing_newline = true
-      end
-    end
-
-    if needs_leading_newline then
-      table.insert(lines_to_insert, "")
-    end
     for _, import_statement in ipairs(unique_imports_to_add) do
       table.insert(lines_to_insert, import_statement)
     end
-    if needs_trailing_newline then
-      table.insert(lines_to_insert, "")
-    end
 
     -- Insert the lines into the buffer
-    vim.api.nvim_buf_set_lines(bufnr, api_insert_line, api_insert_line, false, lines_to_insert)
+    vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, lines_to_insert)
 
     vim.notify("Added " .. added_count .. " new import statement(s).", vim.log.levels.INFO)
   end
