@@ -106,7 +106,6 @@ end
 -- Main function
 function M.add_missing_imports()
   if vim.bo.filetype ~= "python" then
-    -- Keep filetype check unconditional? Yes.
     vim.notify("MissingImports only works in Python files.", vim.log.levels.INFO)
     return
   end
@@ -143,7 +142,7 @@ function M.setup(opts)
     nargs = 0,
   })
 
-  utils.notify_debug("MissingImports setup complete.") -- Make setup message debug only
+  utils.notify_debug("MissingImports setup complete.")
 end
 
 return M

@@ -9,8 +9,13 @@ M.notify_debug = function(msg, level)
   end
 end
 
--- Function to find the project root by searching upwards for pyproject.toml
 M.find_project_root = function()
+  local root_dir_from_lsp = vim.lsp.client.root_dir
+  if root_dir_from_lsp then
+    return root_dir_from_lsp
+  end
+
+  -- find the project root by searching upwards for pyproject.toml
   local path = vim.fn.getcwd()
   while path ~= "/" do
     if vim.fn.filereadable(path .. "/pyproject.toml") == 1 then
@@ -64,6 +69,93 @@ M.identify_undefined_names = function(diagnostics)
   return names_list
 end
 
+local function find_import_statements_from_files(undefined_names, project_root)
+  if not project_root then
+    vim.notify("Could not find project root (pyproject.toml). Cannot process import statements.", vim.log.levels.WARN)
+    return {}, {}
+  end
+
+  local import_file_mapping = {} -- {file_path: {var1, var2, ...}}
+  local undefined_to_sources = {} -- {undefined_var: {source1, source2, ...}}
+
+  -- Initialize undefined-to-sources mapping
+  for _, name in ipairs(undefined_names) do
+    undefined_to_sources[name] = {}
+  end
+
+  -- Step 1: Use ripgrep to find files mentioning undefined variables
+  local file_hits = {}
+  vim.fn.jobstart({ "rg", "--glob", "*.py", table.concat(undefined_names, "|"), project_root }, {
+    on_stdout = function(_, data, _)
+      for _, line in ipairs(data) do
+        if line and line ~= "" then
+          local file_path = vim.split(line, ":")[1]
+          file_hits[file_path] = true
+        end
+      end
+    end,
+    on_stderr = function(_, data, _)
+      vim.notify("Ripgrep error: " .. table.concat(data, "\n"), vim.log.levels.ERROR)
+    end,
+    on_exit = function(_, exit_code, _)
+      if exit_code ~= 0 then
+        vim.notify("Ripgrep process for imports exited with code: " .. exit_code, vim.log.levels.WARN)
+      end
+
+      -- Step 2: Parse each file for import statements
+      print(vim.inspect(file_hits))
+      for file_path, _ in pairs(file_hits) do
+        local file_content = vim.fn.readfile(file_path)
+        if file_content then
+          local relevant_vars = {}
+          for _, line in ipairs(file_content) do
+            -- Extract import statements; allow for multiline imports
+            if line:match("^%s*import%s+") or line:match("^%s*from%s+.+%s+import%s+") then
+              local full_import = line -- Start of the import statement
+              while full_import:match(",%s*$") or full_import:match("\\%s*$") do
+                full_import = full_import .. "\n" .. (table.remove(file_content, 1) or "")
+              end
+
+              -- Check if the import mentions undefined variables
+              for _, name in ipairs(undefined_names) do
+                if full_import:match(name) then
+                  table.insert(relevant_vars, name) -- Relevant import line
+                  -- Parse the source from the import statement
+                  if full_import:match("^%s*import%s+") then
+                    -- For "import module"
+                    local module = full_import:match("^%s*import%s+([%w%.]+)")
+                    if module then
+                      undefined_to_sources[name][module] = true
+                    end
+                  elseif full_import:match("^%s*from%s+([%w%.]+)%s+import%s+") then
+                    -- For "from module import x"
+                    local module = full_import:match("^%s*from%s+([%w%.]+)%s+import%s+")
+                    if module then
+                      undefined_to_sources[name][module .. "." .. name] = true
+                    end
+                  end
+                end
+              end
+            end
+          end
+
+          -- Add file info for parsed variables
+          if #relevant_vars > 0 then
+            import_file_mapping[file_path] = relevant_vars
+          end
+        end
+      end
+    end,
+  })
+
+  -- Convert sources to lists (remove duplicates)
+  for name, source_set in pairs(undefined_to_sources) do
+    undefined_to_sources[name] = vim.tbl_keys(source_set)
+  end
+
+  return undefined_to_sources
+end
+
 -- Function to find possible import paths using Treesitter and ripgrep (Temporary Buffer Method)
 M.find_possible_imports = function(undefined_names, project_root, on_done)
   if not project_root then
@@ -73,6 +165,9 @@ M.find_possible_imports = function(undefined_names, project_root, on_done)
 
   local possible_imports = {}
   local python_files = {}
+
+  local import_statements = find_import_statements_from_files(undefined_names, project_root)
+  print(vim.inspect(import_statements))
 
   -- Use ripgrep to find all Python files
   vim.fn.jobstart({ "rg", "--files", "--glob", "*.py", project_root }, {
