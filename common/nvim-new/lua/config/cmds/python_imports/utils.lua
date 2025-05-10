@@ -1,354 +1,139 @@
 -- utils module
+---@class MissingImports.Utils
 local M = {}
 
 M.debug = false
--- Helper function for conditional logging
-M.notify_debug = function(msg, level)
-  if enabled then
-    vim.notify(msg, level or vim.log.levels.INFO)
-  end
+
+---helper function for conditional logging
+---@param msg string
+---@param level vim.log.levels
+M.log = function(msg, level)
+  vim.notify("[python_imports] " .. msg, level or vim.log.levels.DEBUG)
 end
 
-M.find_project_root = function()
-  local root_dir_from_lsp = vim.lsp.client.root_dir
-  if root_dir_from_lsp then
-    return root_dir_from_lsp
-  end
-
-  -- find the project root by searching upwards for pyproject.toml
-  local path = vim.fn.getcwd()
-  while path ~= "/" do
-    if vim.fn.filereadable(path .. "/pyproject.toml") == 1 then
-      return path
-    end
-    path = vim.fn.fnamemodify(path, ":h")
-  end
-  return nil -- No pyproject.toml found
-end
-
--- Function to get LSP diagnostics for the current buffer
-M.get_diagnostics = function()
+---get diagnostics for unresolved imports in current buffer
+---@return vim.Diagnostic[]
+M.get_unresolved_imports_diagnostics = function()
   local bufnr = vim.api.nvim_get_current_buf()
   local diagnostics = vim.diagnostic.get(bufnr)
-  return diagnostics or {}
-end
 
--- Function to identify undefined names from diagnostics using code and range
-M.identify_undefined_names = function(diagnostics)
-  local undefined_names = {}
-  local bufnr = vim.api.nvim_get_current_buf()
-
-  for _, diag in ipairs(diagnostics) do
-    if diag.severity == vim.diagnostic.severity.ERROR and diag.code then
-      -- Check for specific diagnostic codes that indicate an undefined variable.
-      -- The exact code might vary depending on the LSP server (e.g., Pyright, pylsp).
-      -- 'reportUndefinedVariable' is a common one for Pyright.
-      if diag.code == "reportUndefinedVariable" or diag.code == "undefined-variable" then
-        -- Use the diagnostic range to get the exact text of the undefined name
-        local start_row = diag.lnum -- lnum is 0-indexed line
-        local start_col = diag.col -- col is 0-indexed character
-        local end_row = diag.end_lnum -- end_lnum is 0-indexed line
-        local end_col = diag.end_col -- end_col is 0-indexed character
-
-        -- nvim_buf_get_text expects 0-indexed start/end row/col
-        local name_text = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
-
-        local name = table.concat(name_text, "\n") -- Join without newline for single identifier - this is probably not
-
-        if name and name ~= "" then
-          undefined_names[name] = true -- Use a table as a set to avoid duplicates
-        end
-      end
+  local filtered_diagnostics = {}
+  for _, diagnostic in ipairs(diagnostics) do
+    if M.is_unresolved_import_diagnostic(diagnostic) then
+      table.insert(filtered_diagnostics, diagnostic)
     end
   end
-
-  local names_list = {}
-  for name, _ in pairs(undefined_names) do
-    table.insert(names_list, name)
-  end
-  return names_list
+  return filtered_diagnostics
 end
 
-local function find_import_statements_from_files(undefined_names, project_root)
-  if not project_root then
-    vim.notify("Could not find project root (pyproject.toml). Cannot process import statements.", vim.log.levels.WARN)
-    return {}, {}
-  end
-
-  local import_file_mapping = {} -- {file_path: {var1, var2, ...}}
-  local undefined_to_sources = {} -- {undefined_var: {source1, source2, ...}}
-
-  -- Initialize undefined-to-sources mapping
-  for _, name in ipairs(undefined_names) do
-    undefined_to_sources[name] = {}
-  end
-
-  -- Step 1: Use ripgrep to find files mentioning undefined variables
-  local file_hits = {}
-  vim.fn.jobstart({ "rg", "--glob", "*.py", table.concat(undefined_names, "|"), project_root }, {
-    on_stdout = function(_, data, _)
-      for _, line in ipairs(data) do
-        if line and line ~= "" then
-          local file_path = vim.split(line, ":")[1]
-          file_hits[file_path] = true
-        end
-      end
-    end,
-    on_stderr = function(_, data, _)
-      vim.notify("Ripgrep error: " .. table.concat(data, "\n"), vim.log.levels.ERROR)
-    end,
-    on_exit = function(_, exit_code, _)
-      if exit_code ~= 0 then
-        vim.notify("Ripgrep process for imports exited with code: " .. exit_code, vim.log.levels.WARN)
-      end
-
-      -- Step 2: Parse each file for import statements
-      print(vim.inspect(file_hits))
-      for file_path, _ in pairs(file_hits) do
-        local file_content = vim.fn.readfile(file_path)
-        if file_content then
-          local relevant_vars = {}
-          for _, line in ipairs(file_content) do
-            -- Extract import statements; allow for multiline imports
-            if line:match("^%s*import%s+") or line:match("^%s*from%s+.+%s+import%s+") then
-              local full_import = line -- Start of the import statement
-              while full_import:match(",%s*$") or full_import:match("\\%s*$") do
-                full_import = full_import .. "\n" .. (table.remove(file_content, 1) or "")
-              end
-
-              -- Check if the import mentions undefined variables
-              for _, name in ipairs(undefined_names) do
-                if full_import:match(name) then
-                  table.insert(relevant_vars, name) -- Relevant import line
-                  -- Parse the source from the import statement
-                  if full_import:match("^%s*import%s+") then
-                    -- For "import module"
-                    local module = full_import:match("^%s*import%s+([%w%.]+)")
-                    if module then
-                      undefined_to_sources[name][module] = true
-                    end
-                  elseif full_import:match("^%s*from%s+([%w%.]+)%s+import%s+") then
-                    -- For "from module import x"
-                    local module = full_import:match("^%s*from%s+([%w%.]+)%s+import%s+")
-                    if module then
-                      undefined_to_sources[name][module .. "." .. name] = true
-                    end
-                  end
-                end
-              end
-            end
-          end
-
-          -- Add file info for parsed variables
-          if #relevant_vars > 0 then
-            import_file_mapping[file_path] = relevant_vars
-          end
-        end
-      end
-    end,
-  })
-
-  -- Convert sources to lists (remove duplicates)
-  for name, source_set in pairs(undefined_to_sources) do
-    undefined_to_sources[name] = vim.tbl_keys(source_set)
-  end
-
-  return undefined_to_sources
+---@param diagnostic vim.Diagnostic
+---@return boolean
+M.is_unresolved_import_diagnostic = function(diagnostic)
+  return diagnostic.severity == vim.diagnostic.severity.ERROR and diagnostic.code == "reportUndefinedVariable" -- this name is Pyright specific
 end
 
--- Function to find possible import paths using Treesitter and ripgrep (Temporary Buffer Method)
-M.find_possible_imports = function(undefined_names, project_root, on_done)
-  if not project_root then
-    vim.notify("Could not find project root (pyproject.toml). Cannot search for imports.", vim.log.levels.WARN)
+M.lsp_response_result_to_completion_items = function(result, prefix)
+  if vim.fn.has("nvim-0.11.0") == 1 then
+    return vim.lsp.completion._lsp_to_complete_items(result, prefix)
+  elseif vim.fn.has("nvim-0.10.0") == 1 then
+    return vim.lsp.util.text_document_completion_list_to_complete_items(result, prefix)
+  else
+    return require("vim.lsp.util").text_document_completion_list_to_complete_items(result, prefix)
+  end
+end
+
+---@param lsp_response_result lsp.CompletionList|lsp.CompletionItem[] from `textDocument/completion`
+---@param unresolved_import_name string|nil
+---@return table[]
+M.get_auto_import_completion_items = function(lsp_response_result, unresolved_import_name)
+  local completion_items = M.lsp_response_result_to_completion_items(lsp_response_result, unresolved_import_name)
+
+  if vim.tbl_isempty(completion_items) then
+    M.log('no completion results found for "' .. unresolved_import_name .. '"', vim.log.levels.DEBUG)
     return {}
   end
 
-  local possible_imports = {}
-  local python_files = {}
+  return vim.tbl_filter(function(completion_item)
+    local completion_item_description, completion_item_edits =
+      completion_item.user_data
+        and completion_item.user_data.nvim
+        and completion_item.user_data.nvim.lsp
+        and completion_item.user_data.nvim.lsp.completion_item
+        and completion_item.user_data.nvim.lsp.completion_item.labelDetails
+        and completion_item.user_data.nvim.lsp.completion_item.labelDetails.description,
+      completion_item.user_data.nvim.lsp.completion_item.additionalTextEdits
 
-  local import_statements = find_import_statements_from_files(undefined_names, project_root)
-  print(vim.inspect(import_statements))
-
-  -- Use ripgrep to find all Python files
-  vim.fn.jobstart({ "rg", "--files", "--glob", "*.py", project_root }, {
-    on_stdout = function(_, data, _)
-      for _, line in ipairs(data) do
-        if line and line ~= "" then
-          table.insert(python_files, line)
-        end
-      end
-    end,
-    on_stderr = function(_, data, _)
-      vim.notify("Ripgrep error: " .. table.concat(data, "\n"), vim.log.levels.ERROR)
-    end,
-    on_exit = function(_, exit_code, _)
-      if exit_code ~= 0 then
-        M.notify_debug("Ripgrep exited with code: " .. exit_code, vim.log.levels.WARN)
-      end
-      if #python_files == 0 then
-        M.notify_debug("No Python files found in the project using ripgrep.")
-        on_done({}, undefined_names)
-        return
-      end
-
-      local undefined_set = {}
-      for _, undefined_name in ipairs(undefined_names) do
-        undefined_set[undefined_name] = true
-        possible_imports[undefined_name] = {}
-      end
-
-      M.notify_debug("Searching " .. #python_files .. " Python files for definitions using Treesitter...")
-
-      for _, file_path in ipairs(python_files) do
-        -- Skip the current file
-        if vim.fn.expand("%:p") == vim.fn.fnamemodify(file_path, ":p") then
-          goto continue_files
-        end
-
-        local relative_path = file_path:sub(#project_root + 2)
-        local module_path = relative_path:gsub("/", "."):gsub("%.py$", "")
-        if module_path:match("__init__$") then
-          module_path = module_path:gsub(".__init__$", "")
-        end
-
-        -- Read file content
-        local file_content_lines = vim.fn.readfile(file_path)
-        if not file_content_lines then
-          M.notify_debug("Could not read file: " .. file_path, vim.log.levels.WARN)
-          goto continue_files
-        end
-
-        local temp_bufnr = -1
-        local root = nil
-        local temp_parser = nil
-
-        -- Use pcall for safety during buffer/parser operations
-        local ok, result = pcall(function()
-          temp_bufnr = vim.api.nvim_create_buf(false, true)
-          vim.api.nvim_buf_set_lines(temp_bufnr, 0, -1, false, file_content_lines)
-          temp_parser = vim.treesitter.get_parser(temp_bufnr, "python")
-          if not temp_parser then
-            error("Failed to get parser for temp buffer " .. temp_bufnr)
-          end
-          local trees = temp_parser:parse() -- Parse the entire buffer
-          if not trees or not trees[1] then
-            error("Failed to parse content of temp buffer " .. temp_bufnr)
-          end
-          return trees[1]:root()
-        end)
-
-        if not ok then
-          -- Keep errors unconditional
-          vim.notify("Error processing file " .. file_path .. ": " .. tostring(result), vim.log.levels.WARN)
-          if temp_bufnr ~= -1 and vim.api.nvim_buf_is_valid(temp_bufnr) then
-            vim.api.nvim_buf_delete(temp_bufnr, { force = true })
-          end
-          goto continue_files
-        end
-        root = result
-
-        -- Define Treesitter queries
-        local queries = {
-          function_definition = "(function_definition name: (identifier) @name)",
-          class_definition = "(class_definition name: (identifier) @name)",
-        }
-
-        for query_name, query_string in pairs(queries) do
-          local success, query = pcall(vim.treesitter.query.parse, "python", query_string)
-          if success and query then
-            -- Iterate captures using the root node and the file content lines
-            for id, node, _ in query:iter_captures(root, file_content_lines, 0, -1) do
-              if query.captures[id] == "name" then
-                local node_text_list = vim.treesitter.get_node_text(node, table.concat(file_content_lines, "\n"), {})
-                local defined_name = node_text_list
-
-                -- Check if the defined name is in the undefined set
-                if defined_name and defined_name ~= "" and undefined_set[defined_name] then
-                  local import_path = module_path .. "." .. defined_name
-                  local already_added = false
-                  for _, existing_import in ipairs(possible_imports[defined_name]) do
-                    if existing_import == import_path then
-                      already_added = true
-                      break
-                    end
-                  end
-                  if not already_added then
-                    table.insert(possible_imports[defined_name], import_path)
-                  end
-                end
-              end
-            end
-          else
-            vim.notify(
-              "Could not parse Treesitter query: " .. query_name .. " - " .. (query or "Error"),
-              vim.log.levels.WARN
-            )
-          end
-        end
-
-        -- Clean up the temporary buffer
-        if temp_bufnr ~= -1 and vim.api.nvim_buf_is_valid(temp_bufnr) then
-          vim.api.nvim_buf_delete(temp_bufnr, { force = true })
-        end
-
-        ::continue_files::
-      end
-
-      -- Filter out names with no found imports
-      local resolvable_imports = {}
-      for name, imports in pairs(possible_imports) do
-        if #imports > 0 then
-          resolvable_imports[name] = imports
-        end
-      end
-
-      M.notify_debug("Treesitter search finished. Processing results...")
-      on_done(resolvable_imports, undefined_names)
-    end,
-  })
-
-  return {} -- Return immediately, processing happens in callback
+    return completion_item.word == unresolved_import_name
+      and completion_item_description
+      and completion_item_edits
+      and not vim.tbl_isempty(completion_item_edits)
+      and completion_item.menu == "Auto-import"
+  end, completion_items)
 end
 
--- Function to add import statements to the buffer using Treesitter for insertion point
-M.add_imports_to_buffer = function(imports_to_add)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local current_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-
-  -- 1. Check for existing imports to avoid duplicates
-  local existing_imports = {}
-  for _, line in ipairs(current_lines) do
-    if line:match("^%s*import%s+") or line:match("^%s*from%s+") then
-      existing_imports[vim.trim(line)] = true
-    end
-  end
-
-  local unique_imports_to_add = {}
-  local added_count = 0
-  for _, import_statement in ipairs(imports_to_add) do
-    if not existing_imports[vim.trim(import_statement)] then
-      table.insert(unique_imports_to_add, import_statement)
-      existing_imports[vim.trim(import_statement)] = true
-      added_count = added_count + 1
-    end
-  end
-
-  if added_count == 0 then
-    M.notify_debug("All suggested imports already exist.")
+---handle the async response from the LSP for `textDocument/completion`
+---@param error lsp.ResponseError
+---@param response_result any
+---@param diagnostic vim.Diagnostic
+M.handle_lsp_import_response = function(error, response_result, diagnostic)
+  local unresolved_import_name = M.get_unresolved_import_name(diagnostic)
+  if error then
+    M.log(
+      string.format("LSP error when processing `%s`: ", unresolved_import_name) .. vim.inspect(error),
+      vim.log.levels.ERROR
+    )
     return
   end
 
-  table.sort(unique_imports_to_add)
-  local lines_to_insert = {}
-  for _, import_statement in ipairs(unique_imports_to_add) do
-    table.insert(lines_to_insert, import_statement)
+  if not response_result or vim.tbl_isempty(response_result.items) then
+    M.log("no import found for " .. unresolved_import_name, vim.log.levels.INFO)
+    return
   end
 
-  -- 4. Insert the lines
-  vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, lines_to_insert)
+  local auto_imports_completions = M.get_auto_import_completion_items(response_result, unresolved_import_name)
 
-  -- Keep this notification unconditional
-  vim.notify("Added " .. added_count .. " new import statement(s).", vim.log.levels.INFO)
+  if #auto_imports_completions == 1 then
+    M.resolve_import_from_lsp(auto_imports_completions[1], diagnostic.bufnr)
+  else
+    print('multiple auto-imports found for "' .. unresolved_import_name .. '"')
+  end
+end
+
+---add import statement to buffer from LSP completion item
+---@param auto_import_from_lsp any|nil
+---@param bufnr any
+M.resolve_import_from_lsp = function(auto_import_from_lsp, bufnr)
+  if auto_import_from_lsp == nil then
+    M.log("no auto import found", vim.log.levels.DEBUG)
+    return
+  end
+
+  vim.lsp.util.apply_text_edits(
+    auto_import_from_lsp.user_data.nvim.lsp.completion_item.additionalTextEdits,
+    bufnr,
+    "utf-8"
+  )
+end
+
+---get the name of the unresolved import from the diagnostic (e.g. variable name)
+---@param diagnostic vim.Diagnostic
+---@return string|nil
+M.get_unresolved_import_name = function(diagnostic)
+  if not (diagnostic.severity == vim.diagnostic.severity.ERROR and M.is_unresolved_import_diagnostic(diagnostic)) then
+    M.log("diagnostic is not an unresolved import: " .. vim.inspect(diagnostic), vim.log.levels.DEBUG)
+    return
+  end
+
+  local text = vim.api.nvim_buf_get_text(
+    diagnostic.bufnr,
+    diagnostic.lnum,
+    diagnostic.col,
+    diagnostic.end_lnum,
+    diagnostic.end_col,
+    {}
+  )[1]
+
+  return text
 end
 
 return M

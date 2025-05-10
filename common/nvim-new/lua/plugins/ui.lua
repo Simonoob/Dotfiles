@@ -269,7 +269,7 @@ local zen_ui = {
         showcmd = false, -- disables the command in the last line of the screen
         -- you may turn on/off statusline in zen mode by setting 'laststatus'
         -- statusline will be shown only if 'laststatus' == 3
-        laststatus = 0, -- turn off the statusline in zen mode
+        laststatus = 3, -- turn off the statusline in zen mode
       },
       twilight = { enabled = false }, -- enable to start Twilight when zen mode opens
       gitsigns = { enabled = false }, -- disables git signs
@@ -281,7 +281,7 @@ local zen_ui = {
       -- - listen_on unix:/tmp/kitty
       kitty = {
         enabled = false,
-        font = "+4", -- font size increment
+        font = "+1", -- font size increment
       },
     },
     -- callback where you can add custom code when the Zen window opens
@@ -302,6 +302,11 @@ local zen_ui = {
   end,
 }
 
+local kitty_integration = {
+  "knubie/vim-kitty-navigator",
+  build = "cp ./*.py ~/.config/kitty/",
+}
+
 return {
   colorscheme,
   highlight_comments,
@@ -311,4 +316,5 @@ return {
   progress_and_notify_ui,
   scrolloff_eof,
   zen_ui,
+  kitty_integration,
 }
