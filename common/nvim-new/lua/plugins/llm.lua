@@ -24,7 +24,7 @@ local copilot_base = {
     require("copilot").setup(opts)
 
     vim.keymap.set("n", "<leader>cp", function()
-      require("copilot.panel").open({ position = "right", ratio = 0.4 })
+      require("copilot.panel").toggle()
     end, { desc = "CoPilot Panel" })
   end,
 }
