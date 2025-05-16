@@ -1,21 +1,43 @@
 local copilot_base = {
   "zbirenbaum/copilot.lua",
   cmd = "Copilot",
-  event = "InsertEnter",
-  config = function()
-    require("copilot").setup({
-      suggestion = { enabled = false },
-      panel = { enabled = false },
-    })
+  event = "BufEnter",
+  copilot_model = "Gemini 2.0 Flash",
+  opts = {
+    suggestion = { enabled = false }, -- I want to try triggering copilot manually for a while
+    panel = {
+      enabled = true,
+      auto_refresh = true,
+      keymap = {
+        jump_prev = "[[",
+        jump_next = "]]",
+        accept = "<CR>",
+        refresh = "gr",
+      },
+      layout = {
+        position = "right", -- | top | left | right | horizontal | vertical
+        ratio = 0.4,
+      },
+    },
+  },
+  config = function(_, opts)
+    require("copilot").setup(opts)
+
+    vim.keymap.set("n", "<leader>cp", function()
+      require("copilot.panel").open({ position = "right", ratio = 0.4 })
+    end, { desc = "CoPilot Panel" })
   end,
 }
 
 local copilot_cmp = {
   "zbirenbaum/copilot-cmp",
   dependencies = { "zbirenbaum/copilot.lua" },
-  config = function()
-    require("copilot_cmp").setup()
-  end,
+  opts = {
+    enabled = false, -- I want to try triggering copilot manually for a while
+  },
+  -- config = function()
+  --   require("copilot_cmp").setup()
+  -- end,
 }
 
 local ai_agent = {
@@ -41,7 +63,7 @@ local ai_agent = {
           provider = "copilot",
           chat = true,
           command = true,
-          model = { model = "gpt-4o" },
+          model = { model = "Gemini 2.0 Flash" },
           system_prompt = [[
 
             Remember, you are a coding assistant useful mostly to explore and understand code in the current project.
