@@ -307,6 +307,57 @@ local kitty_integration = {
   build = "cp ./*.py ~/.config/kitty/",
 }
 
+local go_to_preview = {
+  "rmagatti/goto-preview",
+  dependencies = { "rmagatti/logger.nvim" },
+  event = "BufEnter",
+  config = function()
+    require("goto-preview").setup({})
+
+    vim.keymap.set(
+      "n",
+      "gpd",
+      "<cmd>lua require('goto-preview').goto_preview_definition()<CR>",
+      { desc = "Preview definition" }
+    )
+    vim.keymap.set(
+      "n",
+      "gpt",
+      "<cmd>lua require('goto-preview').goto_preview_type_definition()<CR>",
+      { desc = "Preview type definition" }
+    )
+    vim.keymap.set(
+      "n",
+      "gpi",
+      "<cmd>lua require('goto-preview').goto_preview_implementation()<CR>",
+      { desc = "Preview implementation" }
+    )
+    vim.keymap.set(
+      "n",
+      "gpD",
+      "<cmd>lua require('goto-preview').goto_preview_declaration()<CR>",
+      { desc = "Preview declaration" }
+    )
+    vim.keymap.set(
+      "n",
+      "gP",
+      "<cmd>lua require('goto-preview').close_all_win()<CR>",
+      { desc = "Close all preview windows" }
+    )
+    vim.keymap.set(
+      "n",
+      "gpr",
+      "<cmd>lua require('goto-preview').goto_preview_references()<CR>",
+      { desc = "Preview references" }
+    )
+  end,
+}
+local better_messages_buffer = {
+  "ariel-frischer/bmessages.nvim",
+  event = "CmdlineEnter",
+  opts = {},
+}
+
 return {
   colorscheme,
   highlight_comments,
@@ -316,5 +367,7 @@ return {
   progress_and_notify_ui,
   scrolloff_eof,
   zen_ui,
-  kitty_integration,
+  -- kitty_integration, -- disabled for now for conflicts with <C-k> etc. keymaps
+  go_to_preview,
+  better_messages_buffer,
 }

@@ -71,7 +71,8 @@ local function run_cmd_and_append_output(cmd, chat_buffer)
   local folding_end = "}}}"
 
   -- Format the command and its output
-  local formatted_result = string.format("```bash\n%s\n```\n%s\n```\n%s\n```\n%s", cmd, folding_start, result, folding_end)
+  local formatted_result =
+    string.format("```bash\n%s\n```\n%s\n```\n%s\n```\n%s", cmd, folding_start, result, folding_end)
 
   -- Split the folding content into lines
   local formatted_lines = vim.split(formatted_result, "\n")

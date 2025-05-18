@@ -63,7 +63,7 @@ local ai_agent = {
           provider = "copilot",
           chat = true,
           command = true,
-          model = { model = "Gemini 2.0 Flash" },
+          model = { model = "gpt-4o" },
           system_prompt = [[
 
             Remember, you are a coding assistant useful mostly to explore and understand code in the current project.

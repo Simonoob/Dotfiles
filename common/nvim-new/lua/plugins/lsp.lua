@@ -186,7 +186,17 @@ local lsp_config = {
           },
         },
       },
-      pyright = {},
+      pyright = {
+        settings = {
+          python = {
+            analysis = {
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+              diagnosticMode = "workspace", -- important to e.g. resolve missing imports in from non-open files
+            },
+          },
+        },
+      },
       vtsls = {},
     }
 
