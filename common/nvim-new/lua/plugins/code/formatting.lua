@@ -42,7 +42,7 @@ return { -- Autoformat
     default_format_opts = {
       timeout = 3000,
     },
-    format_on_save = function(bufnr)
+    format_after_save = function(bufnr)
       -- Skip formatting if disabled
       if vim.b.disable_autoformat then
         return
