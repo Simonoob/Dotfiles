@@ -1,5 +1,6 @@
 local auto_pairs = {
   "windwp/nvim-autopairs",
+  pin = true,
   event = "InsertEnter",
   config = function()
     require("nvim-autopairs").setup({
@@ -14,6 +15,7 @@ local auto_pairs = {
 }
 local auto_pair_html_tags = {
   "windwp/nvim-ts-autotag",
+  pin = true,
   config = function()
     require("nvim-ts-autotag").setup({
       opts = {
@@ -36,10 +38,12 @@ local auto_pair_html_tags = {
 
 local auto_detect_tabs = {
   "tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
+  pin = true,
 }
 
 local inc_rename = {
   "smjonas/inc-rename.nvim",
+  pin = true,
   config = function()
     require("inc_rename").setup()
   end,

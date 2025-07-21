@@ -1,15 +1,17 @@
 return {
   "ray-x/navigator.lua",
+  pin = true,
   enabled = false,
   dependencies = {
     {
       "ray-x/guihua.lua",
+      pin = true,
       build = "cd lua/fzy && make",
     },
-    "neovim/nvim-lspconfig",
-    { "williamboman/mason.nvim", opts = {} },
-    "williamboman/mason-lspconfig.nvim", -- compatibility layer for mason and lspconfig
-    "WhoIsSethDaniel/mason-tool-installer.nvim", -- handles updates for tools installed via mason
+    { "neovim/nvim-lspconfig", pin = true },
+    { "williamboman/mason.nvim", pin = true, opts = {} },
+    { "williamboman/mason-lspconfig.nvim", pin = true },
+    { "WhoIsSethDaniel/mason-tool-installer.nvim", pin = true },
   },
   config = function()
     print("Loading navigator.lua")

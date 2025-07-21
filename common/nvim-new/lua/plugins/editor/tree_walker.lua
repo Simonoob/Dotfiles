@@ -1,5 +1,6 @@
 return {
   "aaronik/treewalker.nvim",
+  pin = true,
 
   opts = {
     -- Whether to briefly highlight the node after jumping to it

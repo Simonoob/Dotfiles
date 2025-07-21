@@ -1,6 +1,7 @@
 return {
   -- work with CSV like a san person
   "hat0uma/csvview.nvim",
+  pin = true,
   ---@module "csvview"
   ---@type CsvView.Options
   opts = {

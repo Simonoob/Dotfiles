@@ -34,7 +34,8 @@ end
 
 return {
   "kevinhwang91/nvim-ufo",
-  dependencies = { "kevinhwang91/promise-async" },
+  pin = true,
+  dependencies = { { "kevinhwang91/promise-async", pin = true } },
   config = function()
     require("ufo").setup({
       provider_selector = function(bufnr, filetype, buftype)

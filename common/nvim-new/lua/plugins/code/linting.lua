@@ -5,6 +5,7 @@ local active_events = {
 return {
   {
     "mfussenegger/nvim-lint",
+    pin = true,
     enabled = false, -- gave issues with updates - I already have the Eslint LSP server, do I really need this?
     event = active_events,
     config = function()

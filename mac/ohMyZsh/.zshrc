@@ -149,10 +149,11 @@ export PATH="$PATH:/Users/simonoob/.lmstudio/bin"
 export PATH="/Users/simonoob/.asdf/installs/poetry/2.1.1/bin:$PATH"
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc'; fi
+# if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/path.zsh.inc'; fi
 
 # The next line enables shell command completion for gcloud.
-if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc'; fi
+# if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc'; fi
+
 
 alias work="timer 40m && say 'time for a break' \
                 && terminal-notifier -message 'Pomodoro'\
@@ -181,3 +182,15 @@ pomo(){
 export PATH=$HOME/.config/emacs/bin:$PATH
 alias emacs="emacsclient -c -a=''"
 
+
+# package manager for kubectl
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+
+# Add Google Cloud SDK to PATH and enable shell command completion
+for zsh users
+    source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+    source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+
+
+alias get-ip-wifi='ipconfig getaddr en0'

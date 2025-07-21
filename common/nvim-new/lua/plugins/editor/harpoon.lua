@@ -1,7 +1,8 @@
 return {
   "ThePrimeagen/harpoon",
+  pin = true,
   branch = "harpoon2",
-  dependencies = { "nvim-lua/plenary.nvim" },
+  dependencies = { { "nvim-lua/plenary.nvim", pin = true } },
   opts = {
     menu = {
       width = vim.api.nvim_win_get_width(0) - 4,

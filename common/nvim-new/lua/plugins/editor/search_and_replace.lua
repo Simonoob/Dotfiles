@@ -1,6 +1,7 @@
 return {
   -- search/replace in multiple files
   "MagicDuck/grug-far.nvim",
+  pin = true,
   opts = { headerMaxWidth = 80 },
   cmd = "GrugFar",
   keys = {

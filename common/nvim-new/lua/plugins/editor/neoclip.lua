@@ -1,9 +1,10 @@
 return {
   -- clipboard managment with telescope integration
   "AckslD/nvim-neoclip.lua",
+  pin = true,
   dependencies = {
-    { "nvim-telescope/telescope.nvim" },
-    { "kkharji/sqlite.lua", module = "sqlite" }, -- for persistent storage across sessions
+    { "nvim-telescope/telescope.nvim", pin = true },
+    { "kkharji/sqlite.lua", pin = true, module = "sqlite" }, -- for persistent storage across sessions
   },
   config = function()
     require("neoclip").setup()

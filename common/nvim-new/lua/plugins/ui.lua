@@ -1,5 +1,6 @@
 local colorscheme = {
   "ellisonleao/gruvbox.nvim",
+  pin = true,
   lazy = false, -- make sure we load this during startup if it is your main colorscheme
   priority = 1000, -- make sure to load this before all the other start plugins
   config = function()
@@ -48,13 +49,15 @@ local colorscheme = {
 local highlight_comments = {
   -- Highlight todo, notes, etc in comments
   "folke/todo-comments.nvim",
+  pin = true,
   event = "VimEnter",
-  dependencies = { "nvim-lua/plenary.nvim" },
+  dependencies = { { "nvim-lua/plenary.nvim", pin = true } },
   opts = { signs = false },
 }
 
 local show_marks = {
   "chentoast/marks.nvim",
+  pin = true,
   event = "VeryLazy",
   opts = {
     --  set_next               -- Set next available lowercase mark at cursor.
@@ -139,6 +142,7 @@ local show_marks = {
 
 local snacks = {
   "folke/snacks.nvim",
+  pin = true,
   ---@type snacks.Config
   priority = 1000,
   opts = {
@@ -187,6 +191,7 @@ local snacks = {
 
 local highlight_matching_parenthesis = {
   "utilyre/sentiment.nvim",
+  pin = true,
   version = "*",
   event = "VeryLazy", -- keep for lazy loading
   opts = {
@@ -200,6 +205,7 @@ local highlight_matching_parenthesis = {
 
 local progress_and_notify_ui = {
   "j-hui/fidget.nvim",
+  pin = true,
   opts = {
     -- options
   },
@@ -208,15 +214,18 @@ local progress_and_notify_ui = {
 local scrolloff_eof = {
   -- keep the "scolloff" behaviour also at the end of the file
   "Aasim-A/scrollEOF.nvim",
+  pin = true,
   event = { "CursorMoved", "WinScrolled" },
   opts = {},
 }
 
 local zen_ui = {
   "folke/zen-mode.nvim",
+  pin = true,
   dependencies = {
     {
       "folke/twilight.nvim",
+      pin = true,
       opts = {
         dimming = {
           alpha = 0.25, -- amount of dimming
@@ -304,12 +313,14 @@ local zen_ui = {
 
 local kitty_integration = {
   "knubie/vim-kitty-navigator",
+  pin = true,
   build = "cp ./*.py ~/.config/kitty/",
 }
 
 local go_to_preview = {
   "rmagatti/goto-preview",
-  dependencies = { "rmagatti/logger.nvim" },
+  pin = true,
+  dependencies = { { "rmagatti/logger.nvim", pin = true } },
   event = "BufEnter",
   config = function()
     require("goto-preview").setup({})
@@ -354,6 +365,7 @@ local go_to_preview = {
 }
 local better_messages_buffer = {
   "ariel-frischer/bmessages.nvim",
+  pin = true,
   event = "CmdlineEnter",
   opts = {},
 }

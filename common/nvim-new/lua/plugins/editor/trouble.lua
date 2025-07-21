@@ -1,6 +1,7 @@
 return {
   -- better diagnostics list and others
   "folke/trouble.nvim",
+  pin = true,
   cmd = { "Trouble" },
   opts = {
     modes = {

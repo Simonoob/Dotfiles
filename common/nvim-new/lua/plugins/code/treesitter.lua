@@ -1,9 +1,10 @@
 return { -- Highlight, edit, and navigate code
   "nvim-treesitter/nvim-treesitter",
+  pin = true,
   build = ":TSUpdate", -- Automatically updates parsers when plugins are installed
   event = { "BufReadPost", "BufNewFile" }, -- Lazy loads only when buffers are read/created
   dependencies = {
-    "nvim-treesitter/nvim-treesitter-textobjects", -- Adds text objects for code navigation
+    { "nvim-treesitter/nvim-treesitter-textobjects", pin = true },
   },
   main = "nvim-treesitter.configs", -- Sets main module to use for opts
   -- [[ Configure Treesitter ]] See `:help nvim-treesitter`

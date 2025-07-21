@@ -2,6 +2,7 @@ local gitsigns = {
   -- See `:help gitsigns` to understand what the configuration keys do
   -- Adds git related signs to the gutter, as well as utilities for managing changes
   "lewis6991/gitsigns.nvim",
+  pin = true,
   opts = {
     -- signs = {
     -- 	add = { text = "+" },
@@ -64,6 +65,7 @@ local gitsigns = {
 
 local lazygit = {
   "kdheepak/lazygit.nvim",
+  pin = true,
   lazy = true,
   cmd = {
     "LazyGit",
@@ -74,7 +76,7 @@ local lazygit = {
   },
   -- optional for floating window border decoration
   dependencies = {
-    "nvim-lua/plenary.nvim",
+    { "nvim-lua/plenary.nvim", pin = true },
   },
   -- setting the keybinding for LazyGit with 'keys' is recommended in
   -- order to load the plugin when the command is run for the first time
@@ -85,6 +87,7 @@ local lazygit = {
 
 local advancedGitSearch = {
   "aaronhallaert/advanced-git-search.nvim",
+  pin = true,
   cmd = { "AdvancedGitSearch" },
   init = function()
     -- add keymaps
@@ -141,19 +144,18 @@ local advancedGitSearch = {
     require("telescope").load_extension("advanced_git_search")
   end,
   dependencies = {
-    "nvim-telescope/telescope.nvim",
-    -- to show diff splits and open commits in browser
-    "tpope/vim-fugitive",
-    -- to open commits in browser with fugitive
-    "tpope/vim-rhubarb",
+    { "nvim-telescope/telescope.nvim", pin = true },
+    { "tpope/vim-fugitive", pin = true },
+    { "tpope/vim-rhubarb", pin = true },
     -- optional: to replace the diff from fugitive with diffview.nvim
     -- (fugitive is still needed to open in browser)
-    -- "sindrets/diffview.nvim",
+    -- { "sindrets/diffview.nvim", pin = true },
   },
 }
 
 local openInGithub = {
   "almo7aya/openingh.nvim",
+  pin = true,
   cmd = {
     "OpenInGHRepo",
     "OpenInGHFile",

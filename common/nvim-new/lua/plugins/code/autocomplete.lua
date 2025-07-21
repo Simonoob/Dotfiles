@@ -1,6 +1,7 @@
 local lua_snip = {
   -- Snippet Engine & its associated nvim-cmp source
   "L3MON4D3/LuaSnip",
+  pin = true,
   build = (function()
     -- Build Step is needed for regex support in snippets.
     -- This step is not supported in many windows environments.
@@ -16,6 +17,7 @@ local lua_snip = {
     --    https://github.com/rafamadriz/friendly-snippets
     {
       "rafamadriz/friendly-snippets",
+      pin = true,
       config = function()
         require("luasnip.loaders.from_vscode").lazy_load()
         require("luasnip.loaders.from_lua").load({ paths = { "~/.config/nvim/lua/plugins/code/snippets/" } })
@@ -31,17 +33,18 @@ local lua_snip = {
 
 return {
   "hrsh7th/nvim-cmp",
+  pin = true,
   dependencies = {
     lua_snip,
-    "saadparwaiz1/cmp_luasnip",
+    { "saadparwaiz1/cmp_luasnip", pin = true },
 
     -- Adds other completion capabilities.
     --  nvim-cmp does not ship with all sources by default. They are split
     --  into multiple repos for maintenance purposes.
-    "hrsh7th/cmp-nvim-lsp",
-    "hrsh7th/cmp-buffer",
-    "hrsh7th/cmp-path",
-    "hrsh7th/cmp-nvim-lsp-signature-help",
+    { "hrsh7th/cmp-nvim-lsp", pin = true },
+    { "hrsh7th/cmp-buffer", pin = true },
+    { "hrsh7th/cmp-path", pin = true },
+    { "hrsh7th/cmp-nvim-lsp-signature-help", pin = true },
   },
 
   config = function()

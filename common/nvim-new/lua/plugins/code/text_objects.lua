@@ -1,6 +1,7 @@
 return {
   -- better text-objects
   "echasnovski/mini.ai",
+  pin = true,
   lazy = true,
   opts = function()
     local ai = require("mini.ai")

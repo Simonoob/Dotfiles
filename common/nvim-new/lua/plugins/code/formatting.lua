@@ -1,5 +1,6 @@
 return { -- Autoformat
   "stevearc/conform.nvim",
+  pin = true,
   event = { "BufWritePre" },
   cmd = { "ConformInfo" },
   keys = {
@@ -73,6 +74,7 @@ return { -- Autoformat
       typescript = { "eslint_d", "prettierd" },
       javascriptreact = { "eslint_d", "prettierd" },
       typescriptreact = { "eslint_d", "prettierd" },
+      astro = { "prettierd" },
     },
   },
 }

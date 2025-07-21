@@ -1,5 +1,6 @@
 local mini_nvim = { -- Collection of various small independent plugins/modules
   "echasnovski/mini.nvim",
+  pin = true,
   version = false,
   config = function()
     -- Better Around/Inside textobjects
@@ -26,6 +27,7 @@ local smart_comments = {
   -- smart augmentation of comments based on treesitter nodes
   -- it helps to e.g. format comments correctly in .tsx files based on cursor location (TS context | JSX context)
   "folke/ts-comments.nvim",
+  pin = true,
   opts = {},
   event = "VeryLazy",
   enabled = vim.fn.has("nvim-0.10.0") == 1,

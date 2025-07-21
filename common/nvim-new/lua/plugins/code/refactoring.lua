@@ -7,10 +7,11 @@ end
 return {
   {
     "ThePrimeagen/refactoring.nvim",
+    pin = true,
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
+      { "nvim-lua/plenary.nvim", pin = true },
+      { "nvim-treesitter/nvim-treesitter", pin = true },
     },
     keys = {
       { "<leader>cr", "", desc = "refactor", mode = { "n", "x" } },

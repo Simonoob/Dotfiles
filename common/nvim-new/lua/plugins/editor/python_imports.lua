@@ -1,13 +1,14 @@
 return {
   {
     "alexpasmantier/pymple.nvim",
+    pin = true,
     dir = "~/coding/pymple.nvim",
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
+      { "nvim-lua/plenary.nvim", pin = true },
+      { "MunifTanjim/nui.nvim", pin = true },
       -- optional (nicer ui)
-      "stevearc/dressing.nvim",
-      "nvim-tree/nvim-web-devicons",
+      { "stevearc/dressing.nvim", pin = true },
+      { "nvim-tree/nvim-web-devicons", pin = true },
     },
     build = ":PympleBuild",
     opts = {

@@ -1,5 +1,6 @@
 local filesystem_explorer = {
   "stevearc/oil.nvim",
+  pin = true,
   ---@module 'oil'
   ---@type oil.SetupOpts
   opts = {
@@ -32,7 +33,7 @@ local filesystem_explorer = {
     },
   },
   -- Optional dependencies
-  dependencies = { { "echasnovski/mini.icons", opts = {} } },
+  dependencies = { { "echasnovski/mini.icons", opts = {}, pin = true } },
   -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
   keys = {
     {

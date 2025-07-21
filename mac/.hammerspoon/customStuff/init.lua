@@ -1,1 +1,2 @@
-return require("customStuff/systemThemeWatcher")
+-- do not load the systemThemeWatcher module - it's a bit too aggressive and it disrupts the UX in neovim
+-- return require("customStuff/systemThemeWatcher")

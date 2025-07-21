@@ -15,12 +15,14 @@ end
 
 return { -- Fuzzy Finder (files, lsp, etc)
   "nvim-telescope/telescope.nvim",
+  pin = true,
   event = "VimEnter",
   branch = "0.1.x",
   dependencies = {
-    "nvim-lua/plenary.nvim",
+    { "nvim-lua/plenary.nvim", pin = true },
     { -- If encountering errors, see telescope-fzf-native README for installation instructions
       "nvim-telescope/telescope-fzf-native.nvim",
+      pin = true,
 
       -- `build` is used to run some command when the plugin is installed/updated.
       -- This is only run then, not every time Neovim starts up.
@@ -32,10 +34,10 @@ return { -- Fuzzy Finder (files, lsp, etc)
         return vim.fn.executable("make") == 1
       end,
     },
-    { "nvim-telescope/telescope-ui-select.nvim" },
+    { "nvim-telescope/telescope-ui-select.nvim", pin = true },
 
     -- Useful for getting pretty icons, but requires a Nerd Font.
-    { "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
+    { "nvim-tree/nvim-web-devicons", pin = true, enabled = vim.g.have_nerd_font },
   },
   keys = {
     -- Quick access

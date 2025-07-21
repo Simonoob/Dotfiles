@@ -1,5 +1,6 @@
 local copilot_base = {
   "zbirenbaum/copilot.lua",
+  pin = true,
   cmd = "Copilot",
   event = "BufEnter",
   copilot_model = "Gemini 2.0 Flash",
@@ -31,7 +32,8 @@ local copilot_base = {
 
 local copilot_cmp = {
   "zbirenbaum/copilot-cmp",
-  dependencies = { "zbirenbaum/copilot.lua" },
+  pin = true,
+  dependencies = { { "zbirenbaum/copilot.lua", pin = true } },
   opts = {
     enabled = false, -- I want to try triggering copilot manually for a while
   },
@@ -42,6 +44,7 @@ local copilot_cmp = {
 
 local ai_agent = {
   "robitx/gp.nvim",
+  pin = true,
   config = function()
     local conf = {
       -- For customization, refer to Install > Configuration in the Documentation/Readme
