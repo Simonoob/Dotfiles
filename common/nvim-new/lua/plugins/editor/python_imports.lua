@@ -1,5 +1,6 @@
 return {
   {
+    enabled = false,
     "alexpasmantier/pymple.nvim",
     pin = true,
     dir = "~/coding/pymple.nvim",
