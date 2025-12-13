@@ -164,7 +164,9 @@ local lsp_config = {
       clangd = {},
       rust_analyzer = {},
       vtsls = {}, -- can be changed to ts_ls for a more vanilla setup
-
+      ruby_lsp = {
+        capabilities = capabilities,
+      },
       lua_ls = {
         settings = {
           Lua = {
