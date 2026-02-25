@@ -187,6 +187,7 @@ local lsp_config = {
           },
         },
       },
+      cspell_ls = {},
     }
 
     -- Ensure the servers and tools above are installed

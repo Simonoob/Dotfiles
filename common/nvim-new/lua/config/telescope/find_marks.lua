@@ -91,6 +91,7 @@ end
 
 M.setup = function()
   vim.keymap.set("n", "<leader>fm", find_marks, { desc = "find marks" })
+  vim.keymap.set("n", '"', find_marks, { desc = "find marks" })
 end
 
 return M

@@ -104,7 +104,7 @@ local show_marks = {
           end
 
           -- ask for confirmation
-          vim.ui.select({ "abort", "overwrite", "view" }, {
+          vim.ui.select({ "overwrite", "view", "abort" }, {
             prompt = string.format("Mark '%s' already exists", char),
           }, function(choice)
             if choice == "overwrite" then

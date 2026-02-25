@@ -54,7 +54,8 @@ local function stop_review_mode(force)
   end
 
   -- Reset Gitsigns base on all open buffers
-  vim.cmd("Gitsigns reset_base global")
+  require("gitsigns").reset_base("global")
+  require("gitsigns").toggle_word_diff()
 
   -- Close and clear quickfix list
   vim.cmd("Trouble qflist close")
@@ -142,7 +143,7 @@ local function handle_gitsigns()
 end
 
 local function get_all_modified_chunks(comparison_branch)
-  local diff_output = vim.fn.system("git diff --merge-base " .. comparison_branch .. " --unified=0")
+  local diff_output = vim.fn.system("git diff " .. comparison_branch .. "...")
   local lines = vim.split(diff_output, "\n")
 
   local modified_chunks = {}
@@ -173,8 +174,7 @@ local function get_all_modified_chunks(comparison_branch)
 end
 
 local function add_chunks_to_quickfix()
-  vim.fn.setqflist({}, "r")
-  vim.fn.setqflist(M.hunks)
+  require("gitsigns").setqflist("all")
 end
 
 local function open_modified_files()
@@ -285,7 +285,8 @@ local function on_branch_selected(comparison_branch)
 
   handle_gitsigns()
 
-  add_chunks_to_quickfix()
+  -- add_chunks_to_quickfix()
+  require("gitsigns").toggle_word_diff()
 
   open_modified_files()
 end
@@ -305,7 +306,7 @@ local function start_review_mode()
   end)
 end
 
-local valid_commands = { "start", "stop", "files" }
+local valid_commands = { "start", "stop", "files", "hunksToQfixList" }
 
 -- Function to review changes against a selected branch
 vim.api.nvim_create_user_command("BranchReview", function(opts)
@@ -321,6 +322,8 @@ vim.api.nvim_create_user_command("BranchReview", function(opts)
     stop_review_mode()
   elseif command == "files" then
     open_modified_files()
+  elseif command == "hunksToQfixList" then
+    add_chunks_to_quickfix()
   else
     vim.notify("Invalid command. Valid commands are: " .. vim.inspect(valid_commands), vim.log.levels.ERROR)
   end
@@ -346,13 +349,16 @@ end, {
 })
 
 M.setup = function()
-  vim.keymap.set("n", "<leader>gr", function()
+  vim.keymap.set("n", "<leader>gr", "", { desc = "Git branch review" })
+  vim.keymap.set("n", "<leader>grt", function()
     if M.enabled then
       vim.cmd("BranchReview stop")
     else
       vim.cmd("BranchReview start")
     end
-  end, { desc = "Git branch Review toggle" })
+  end, { desc = "toggle review mode" })
+  vim.keymap.set("n", "<leader>grq", "<cmd>BranchReview hunksToQfixList<cr>", { desc = "add hunks to quickfix" })
+  vim.keymap.set("n", "<leader>grf", "<cmd>BranchReview files<cr>", { desc = "open modified files" })
 end
 
 return M
