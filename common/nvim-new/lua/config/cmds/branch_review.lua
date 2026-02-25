@@ -3,14 +3,30 @@ local action_state = require("telescope.actions.state")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
-local dropdown = require("telescope.themes").get_dropdown()
+local entry_display = require("telescope.pickers.entry_display")
+local themes = require("telescope.themes")
 
 local M = {
   enabled = false,
   comparison_branch = nil,
   files = nil,
   hunks = nil,
+  ai_suggestions = nil, -- map: filename -> { order, description }
 }
+
+-- ─── Picker utilities ────────────────────────────────────────────────────────
+
+--- Simple floating dropdown — no preview pane.
+local function open_dropdown(opts)
+  pickers.new(themes.get_dropdown(opts), {}):find()
+end
+
+--- Bottom-anchored ivy layout — supports a preview pane on the right.
+local function open_with_preview(opts)
+  pickers.new(themes.get_ivy(opts), {}):find()
+end
+
+-- ─── Helpers ─────────────────────────────────────────────────────────────────
 
 local function get_current_branch()
   local branch = vim.fn.system("git branch --show-current | tr -d '\n'")
@@ -25,26 +41,6 @@ function M.get_statusline_indicator()
   else
     return ""
   end
-end
-
-local function dropdown_pick_telescope(opts)
-  local telescope_ok = pcall(require, "telescope.builtin")
-  if not telescope_ok then
-    vim.notify("Telescope is required for this function", vim.log.levels.ERROR)
-    return
-  end
-
-  opts = opts
-    or {
-      prompt_title = "Pick file",
-      initial_mode = "normal",
-      finder = finders.new_table({
-        results = { "change `finder` with your function" },
-      }),
-      sorter = conf.generic_sorter({}),
-    }
-
-  pickers.new(dropdown, opts):find()
 end
 
 local function stop_review_mode(force)
@@ -65,81 +61,29 @@ local function stop_review_mode(force)
   M.enabled = false
   M.comparison_branch = nil
   M.current_branch = nil
+  M.ai_suggestions = nil
 
   vim.notify("Review mode stopped", vim.log.levels.INFO)
 end
 
-local function telescope_select_branch(branches, on_select_fn)
-  -- Create picker to select branch
-  dropdown_pick_telescope({
-    prompt_title = "Select branch to compare against:",
-    initial_mode = "normal",
-    sorter = require("telescope.config").values.generic_sorter({}),
-    finder = require("telescope.finders").new_table({
-      results = branches,
-      entry_maker = function(entry)
-        return {
-          value = entry,
-          display = entry,
-          ordinal = entry,
-          filename = entry,
-        }
-      end,
-    }),
-    attach_mappings = function(prompt_bufnr, map)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local selected = action_state.get_selected_entry()
-
-        print("selected.value", selected.value)
-        if not selected.value then
-          vim.notify("No branch selected", vim.log.levels.WARN)
-          vim.cmd("BranchReview stop")
-          return
-        end
-
-        on_select_fn(selected.value)
-      end)
-      map("n", "<Esc>", function()
-        vim.notify("No branch selected", vim.log.levels.ERROR)
-        actions.close(prompt_bufnr)
-        stop_review_mode(true)
-      end)
-      return true
-    end,
-  })
-end
-
 local function get_branches_list()
-  -- Get list of branches
   local branches_raw = vim.fn.systemlist("git branch --format='%(refname:short)'")
-  local branches = {}
+  local seen = { main = true, master = true }
+  local branches = { "main", "master" }
 
-  -- Always include main and master if they exist
-  table.insert(branches, "main")
-  table.insert(branches, "master")
-
-  -- Add other branches
   for _, branch in ipairs(branches_raw) do
-    table.insert(branches, branch)
-  end
-
-  -- Remove duplicates
-  local unique_branches = {}
-  local seen = {}
-  for _, branch in ipairs(branches) do
     if not seen[branch] then
       seen[branch] = true
-      table.insert(unique_branches, branch)
+      table.insert(branches, branch)
     end
   end
-  return unique_branches
+
+  return branches
 end
 
 local function handle_gitsigns()
-  -- Configure Gitsigns to use the selected branch as base
-  local common_comit = vim.system({ "git", "merge-base", M.comparison_branch, M.current_branch }):wait()
-  vim.fn.execute(string.format("Gitsigns change_base %s global", common_comit.stdout)) -- vim.cmd gives an error :confused_cat:
+  local common_commit = vim.system({ "git", "merge-base", M.comparison_branch, M.current_branch }):wait()
+  vim.fn.execute(string.format("Gitsigns change_base %s global", common_commit.stdout))
 end
 
 local function get_all_modified_chunks(comparison_branch)
@@ -150,22 +94,17 @@ local function get_all_modified_chunks(comparison_branch)
   local current_file = nil
 
   for _, line in ipairs(lines) do
-    -- Check for file header line
     local file_match = line:match("^%+%+%+ b/(.+)$")
     if file_match then
       current_file = file_match
     end
 
-    -- Check for chunk header line
     local chunk_match = line:match("^@@ %-[%d,]+ %+([%d,]+) @@")
     if chunk_match and current_file then
       local line_info = vim.split(chunk_match, ",")
-      local start_line = tonumber(line_info[1])
-
       table.insert(modified_chunks, {
         filename = current_file,
-        lnum = start_line,
-        text = line:match("@@ .+ @@(.*)$") or "Modified chunk",
+        lnum = tonumber(line_info[1]),
       })
     end
   end
@@ -177,31 +116,62 @@ local function add_chunks_to_quickfix()
   require("gitsigns").setqflist("all")
 end
 
+local function get_all_modified_files(comparison_branch)
+  local output = vim.fn.system("git diff --name-only --merge-base " .. comparison_branch)
+  return vim.split(output, "\n")
+end
+
+-- ─── Pickers ─────────────────────────────────────────────────────────────────
+
+local function telescope_select_branch(branches, on_select_fn)
+  open_dropdown({
+    prompt_title = "Select branch to compare against:",
+    initial_mode = "normal",
+    sorter = conf.generic_sorter({}),
+    finder = finders.new_table({
+      results = branches,
+      entry_maker = function(entry)
+        return { value = entry, display = entry, ordinal = entry }
+      end,
+    }),
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        actions.close(prompt_bufnr)
+        local selected = action_state.get_selected_entry()
+        if not selected then
+          vim.notify("No branch selected", vim.log.levels.WARN)
+          vim.cmd("BranchReview stop")
+          return
+        end
+        on_select_fn(selected.value)
+      end)
+      map("n", "<Esc>", function()
+        actions.close(prompt_bufnr)
+        stop_review_mode(true)
+      end)
+      return true
+    end,
+  })
+end
+
 local function open_modified_files()
   if M.hunks == nil or #M.hunks == 0 then
     vim.notify("No modified files found - make sure that review mode is ongoing", vim.log.levels.WARN)
     return
   end
 
-  vim.notify(string.format("Found  %s modified files with %s changed chunks", #M.files, #M.hunks), vim.log.levels.INFO)
-
-  -- Create a table for file entries with chunk information
-  local file_entries = {}
+  -- Index chunks by file
   local file_chunks = {}
-
-  -- Count chunks per file and organize chunk info
   for _, item in ipairs(M.hunks) do
     if not file_chunks[item.filename] then
-      file_chunks[item.filename] = {
-        count = 0,
-        locations = {},
-      }
+      file_chunks[item.filename] = { count = 0, locations = {} }
     end
     file_chunks[item.filename].count = file_chunks[item.filename].count + 1
     table.insert(file_chunks[item.filename].locations, item)
   end
 
-  -- Create entries for selection
+  -- Build ordered file entries
+  local file_entries = {}
   for _, file in ipairs(M.files) do
     if file ~= "" then
       table.insert(file_entries, {
@@ -211,55 +181,70 @@ local function open_modified_files()
     end
   end
 
-  dropdown_pick_telescope({
-    prompt_title = "Modified files against " .. M.comparison_branch .. ":",
-    initial_mode = "normal",
-    sorter = require("telescope.config").values.generic_sorter({}),
-    finder = require("telescope.finders").new_table({
-      results = file_entries,
+  -- Sort by AI-suggested order if available
+  if M.ai_suggestions then
+    table.sort(file_entries, function(a, b)
+      local oa = (M.ai_suggestions[a.filename] or {}).order or 999
+      local ob = (M.ai_suggestions[b.filename] or {}).order or 999
+      return oa < ob
+    end)
+  end
 
+  local displayer = entry_display.create({
+    separator = " ",
+    items = {
+      { remaining = true },
+      { width = 12 },
+    },
+  })
+
+  local ai_previewer = require("telescope.previewers").new_buffer_previewer({
+    title = "AI Review Note",
+    define_preview = function(self, entry)
+      local ai = M.ai_suggestions and M.ai_suggestions[entry.filename]
+      local lines = ai and { ai.description } or { "(no AI description)" }
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+      vim.wo[self.state.winid].wrap = true
+    end,
+  })
+
+  open_with_preview({
+    prompt_title = "Modified files — " .. M.comparison_branch,
+    initial_mode = "normal",
+    sorter = conf.generic_sorter({}),
+    previewer = ai_previewer,
+    finder = finders.new_table({
+      results = file_entries,
       entry_maker = function(entry)
+        local ai = M.ai_suggestions and M.ai_suggestions[entry.filename]
+        local parts = vim.split(entry.filename, "/")
+        local short_name = #parts > 1
+            and ("…" .. parts[#parts - 1] .. "/" .. parts[#parts])
+            or entry.filename
         return {
           value = entry,
           display = function()
-            local display_width = vim.api.nvim_win_get_width(0) - 4 -- Adjust padding
-            local parts = vim.split(entry.filename, "/")
-            local display_name
-            if #parts > 1 then
-              display_name = "..." .. parts[#parts - 1] .. "/" .. parts[#parts]
-            else
-              display_name = entry.filename
-            end
-
-            local chunk_text = "[" .. entry.chunks.count .. " chunks]"
-            local padding = display_width - #display_name - #chunk_text
-
-            if padding > 0 then
-              return display_name .. string.rep(" ", padding) .. chunk_text
-            else
-              return display_name .. " " .. chunk_text
-            end
+            return displayer({
+              short_name,
+              { "[" .. entry.chunks.count .. " hunks]", "Comment" },
+            })
           end,
-          ordinal = entry.filename,
+          ordinal = string.format("%03d_%s", ai and ai.order or 999, entry.filename),
           filename = entry.filename,
         }
       end,
     }),
-
-    attach_mappings = function(prompt_bufnr, map)
+    attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         actions.close(prompt_bufnr)
         local selected = action_state.get_selected_entry()
-
         if not selected then
           vim.notify("No file selected", vim.log.levels.WARN)
           return
         end
-
-        -- Open the selected file
-        if selected.value.chunks.count > 0 then
-          local first_chunk = selected.value.chunks.locations[1]
-          vim.cmd(string.format("edit +%d %s", first_chunk.lnum, selected.value.filename))
+        local chunks = selected.value.chunks
+        if chunks.count > 0 then
+          vim.cmd(string.format("edit +%d %s", chunks.locations[1].lnum, selected.value.filename))
         else
           vim.cmd(string.format("edit %s", selected.value.filename))
         end
@@ -269,14 +254,89 @@ local function open_modified_files()
   })
 end
 
-local function get_all_modified_files(comparison_branch)
-  local modified_files_output = vim.fn.system("git diff --name-only --merge-base " .. comparison_branch)
-  local modified_files = vim.split(modified_files_output, "\n")
-  return modified_files
+-- ─── AI augmentation ─────────────────────────────────────────────────────────
+
+local function augment_with_ai()
+  if not M.enabled then
+    vim.notify("Review mode is not ongoing. Start review mode first.", vim.log.levels.WARN)
+    return
+  end
+
+  vim.notify("Fetching AI review suggestions...", vim.log.levels.INFO)
+
+  -- Get PR description if available via gh CLI
+  local pr_ctx = ""
+  local pr_raw = vim.fn.system("gh pr view --json title,body 2>/dev/null")
+  if vim.v.shell_error == 0 and pr_raw ~= "" then
+    local ok, pr = pcall(vim.json.decode, pr_raw)
+    if ok and pr then
+      pr_ctx = string.format("PR Title: %s\nPR Description:\n%s\n", pr.title or "(no title)", pr.body or "(no description)")
+    end
+  end
+
+  local prompt = string.format(
+    [[
+I am doing a code review of branch `%s` against `%s`.
+%s
+Files changed:
+%s
+
+Hunks (filename, start line):
+%s
+
+Return ONLY a valid JSON array, no markdown, no explanation. Each element:
+{ "filename": "<exact path>", "description": "<one sentence summary of changes in this file>", "order": <integer, 1 = highest priority> }
+Include every file. Order by review priority.
+    ]],
+    M.current_branch,
+    M.comparison_branch,
+    pr_ctx,
+    vim.inspect(M.files),
+    vim.inspect(M.hunks)
+  )
+
+  local start_time = vim.uv.now()
+  local timer = vim.uv.new_timer()
+  timer:start(1000, 1000, vim.schedule_wrap(function()
+    local elapsed = math.floor((vim.uv.now() - start_time) / 1000)
+    vim.notify(string.format("Fetching AI review suggestions... (%ds)", elapsed), vim.log.levels.INFO)
+  end))
+
+  vim.system({ "claude", "-p", prompt }, { text = true }, function(result)
+    timer:stop()
+    timer:close()
+
+    local raw = result.stdout or ""
+    local json_str = raw:match("```json%s*(.-)%s*```") or raw:match("```%s*(.-)%s*```") or raw
+    local start_idx = json_str:find("%[")
+    local end_idx = #json_str - (json_str:reverse():find("%]") or 1) + 1
+    json_str = json_str:sub(start_idx, end_idx)
+
+    local ok, suggestions = pcall(vim.json.decode, json_str)
+    if not ok or type(suggestions) ~= "table" then
+      vim.schedule(function()
+        vim.notify("Failed to parse AI response as JSON", vim.log.levels.ERROR)
+      end)
+      return
+    end
+
+    M.ai_suggestions = {}
+    for _, s in ipairs(suggestions) do
+      if s.filename then
+        M.ai_suggestions[s.filename] = { order = s.order or 999, description = s.description or "" }
+      end
+    end
+
+    vim.schedule(function()
+      vim.notify("AI suggestions ready — opening file picker", vim.log.levels.INFO)
+      open_modified_files()
+    end)
+  end)
 end
 
+-- ─── Review lifecycle ────────────────────────────────────────────────────────
+
 local function on_branch_selected(comparison_branch)
-  -- Pull the selected branch
   vim.notify("Pulling " .. comparison_branch .. "...", vim.log.levels.INFO)
   vim.fn.system("git fetch origin " .. comparison_branch .. ":" .. comparison_branch)
 
@@ -284,8 +344,6 @@ local function on_branch_selected(comparison_branch)
   M.hunks = get_all_modified_chunks(comparison_branch)
 
   handle_gitsigns()
-
-  -- add_chunks_to_quickfix()
   require("gitsigns").toggle_word_diff()
 
   open_modified_files()
@@ -306,9 +364,10 @@ local function start_review_mode()
   end)
 end
 
-local valid_commands = { "start", "stop", "files", "hunksToQfixList" }
+-- ─── Command & keymaps ───────────────────────────────────────────────────────
 
--- Function to review changes against a selected branch
+local valid_commands = { "start", "stop", "files", "hunksToQfixList", "aiAugment" }
+
 vim.api.nvim_create_user_command("BranchReview", function(opts)
   local command = opts.args
   if not vim.tbl_contains(valid_commands, command) then
@@ -324,20 +383,18 @@ vim.api.nvim_create_user_command("BranchReview", function(opts)
     open_modified_files()
   elseif command == "hunksToQfixList" then
     add_chunks_to_quickfix()
-  else
-    vim.notify("Invalid command. Valid commands are: " .. vim.inspect(valid_commands), vim.log.levels.ERROR)
+  elseif command == "aiAugment" then
+    augment_with_ai()
   end
 end, {
   nargs = 1,
   desc = "Git branch review mode",
-  complete = function(ArgLead, CmdLine, CursorPos)
-    -- Check if a valid command is already in the command line
+  complete = function(ArgLead, CmdLine)
     for _, cmd in ipairs(valid_commands) do
       if CmdLine:match(cmd) then
         return {}
       end
     end
-
     local matches = {}
     for _, cmd in ipairs(valid_commands) do
       if cmd:match("^" .. ArgLead) then
@@ -351,14 +408,11 @@ end, {
 M.setup = function()
   vim.keymap.set("n", "<leader>gr", "", { desc = "Git branch review" })
   vim.keymap.set("n", "<leader>grt", function()
-    if M.enabled then
-      vim.cmd("BranchReview stop")
-    else
-      vim.cmd("BranchReview start")
-    end
+    vim.cmd(M.enabled and "BranchReview stop" or "BranchReview start")
   end, { desc = "toggle review mode" })
   vim.keymap.set("n", "<leader>grq", "<cmd>BranchReview hunksToQfixList<cr>", { desc = "add hunks to quickfix" })
   vim.keymap.set("n", "<leader>grf", "<cmd>BranchReview files<cr>", { desc = "open modified files" })
+  vim.keymap.set("n", "<leader>gra", "<cmd>BranchReview aiAugment<cr>", { desc = "AI overview" })
 end
 
 return M
