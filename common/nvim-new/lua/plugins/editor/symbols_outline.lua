@@ -1,4 +1,6 @@
 return {
+  -- actual symbols outline "map" for the current file
+  -- TODO: make sure that it's still usable when having 2 separate files in 2 vertical splits
   "hedyhli/outline.nvim",
   pin = true,
   keys = { { "<leader>cs", "<cmd>Outline<cr>", desc = "Toggle Outline" } },

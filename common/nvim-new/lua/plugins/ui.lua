@@ -52,7 +52,7 @@ local highlight_comments = {
   pin = true,
   event = "VimEnter",
   dependencies = { { "nvim-lua/plenary.nvim", pin = true } },
-  opts = { signs = false },
+  opts = { signs = true },
 }
 
 local show_marks = {
@@ -141,32 +141,17 @@ local show_marks = {
 }
 
 local snacks = {
+  -- general UI QoL minor fixes
   "folke/snacks.nvim",
   pin = true,
+  ---@module 'snacks'
   ---@type snacks.Config
-  priority = 1000,
   opts = {
     input = {
-      enabled = true,
+      enabled = false,
     },
-    ---@field enabled? boolean
     ---@class snacks.indent.Config
     indent = {
-      indent = {
-        enabled = false,
-      },
-      -- animate scopes. Enabled by default for Neovim >= 0.10
-      -- Works on older versions but has to trigger redraws during animation.
-      ---@class snacks.indent.animate: snacks.animate.Config
-      ---@field enabled? boolean
-      --- * out: animate outwards from the cursor
-      --- * up: animate upwards from the cursor
-      --- * down: animate downwards from the cursor
-      --- * up_down: animate up or down based on the cursor position
-      ---@field style? "out"|"up_down"|"down"|"up"
-      animate = {
-        enabled = false,
-      },
       ---@class snacks.indent.Scope.Config: snacks.scope.Config
       scope = {
         enabled = true, -- enable highlighting the current scope
@@ -219,151 +204,15 @@ local scrolloff_eof = {
   opts = {},
 }
 
-local zen_ui = {
-  "folke/zen-mode.nvim",
-  pin = true,
-  dependencies = {
-    {
-      "folke/twilight.nvim",
-      pin = true,
-      opts = {
-        dimming = {
-          alpha = 0.25, -- amount of dimming
-          -- we try to get the foreground from the highlight groups or fallback color
-          color = { "Normal", "#ffffff" },
-          term_bg = "#000000", -- if guibg=NONE, this will be used to calculate text color
-          inactive = true, -- when true, other windows will be fully dimmed (unless they contain the same buffer)
-        },
-        context = 50, -- amount of lines we will try to show around the current line
-        treesitter = true, -- use treesitter when available for the filetype
-        -- treesitter is used to automatically expand the visible text,
-        -- but you can further control the types of nodes that should always be fully expanded
-        expand = { -- for treesitter, we we always try to expand to the top-most ancestor with these types
-          "function",
-          "method",
-          "table",
-          "if_statement",
-        },
-        exclude = {}, -- exclude these filetypes
-      },
-    },
-  },
-  opts = {
-    window = {
-      backdrop = 0.95, -- shade the backdrop of the Zen window. Set to 1 to keep the same as Normal
-      -- height and width can be:
-      -- * an absolute number of cells when > 1
-      -- * a percentage of the width / height of the editor when <= 1
-      -- * a function that returns the width or the height
-      width = 120, -- width of the Zen window
-      height = 1, -- height of the Zen window
-      -- by default, no options are changed for the Zen window
-      -- uncomment any of the options below, or add other vim.wo options you want to apply
-      options = {
-        -- signcolumn = "no", -- disable signcolumn
-        -- number = false, -- disable number column
-        -- relativenumber = false, -- disable relative numbers
-        -- cursorline = false, -- disable cursorline
-        -- cursorcolumn = false, -- disable cursor column
-        -- foldcolumn = "0", -- disable fold column
-        -- list = false, -- disable whitespace characters
-      },
-    },
-    plugins = {
-      -- disable some global vim options (vim.o...)
-      -- comment the lines to not apply the options
-      options = {
-        enabled = true,
-        ruler = false, -- disables the ruler text in the cmd line area
-        showcmd = false, -- disables the command in the last line of the screen
-        -- you may turn on/off statusline in zen mode by setting 'laststatus'
-        -- statusline will be shown only if 'laststatus' == 3
-        laststatus = 3, -- turn off the statusline in zen mode
-      },
-      twilight = { enabled = false }, -- enable to start Twilight when zen mode opens
-      gitsigns = { enabled = false }, -- disables git signs
-      tmux = { enabled = false }, -- disables the tmux statusline
-      todo = { enabled = false }, -- if set to "true", todo-comments.nvim highlights will be disabled
-      -- this will change the font size on kitty when in zen mode
-      -- to make this work, you need to set the following kitty options:
-      -- - allow_remote_control socket-only
-      -- - listen_on unix:/tmp/kitty
-      kitty = {
-        enabled = false,
-        font = "+1", -- font size increment
-      },
-    },
-    -- callback where you can add custom code when the Zen window opens
-    on_open = function(win) end,
-    -- callback where you can add custom code when the Zen window closes
-    on_close = function() end,
-  },
+-- DISABLED FOR NOW
+-- local kitty_integration = {
+--   "knubie/vim-kitty-navigator",
+--   pin = true,
+--   build = "cp ./*.py ~/.config/kitty/",
+-- }
 
-  config = function(_, opts)
-    require("zen-mode").setup(opts)
-    vim.keymap.set({ "n" }, "<leader>tz", function()
-      require("zen-mode").toggle({
-        window = {
-          width = math.min(150, math.floor(vim.o.columns * 0.9)),
-        },
-      })
-    end, { desc = "Toggle zen mode" })
-  end,
-}
-
-local kitty_integration = {
-  "knubie/vim-kitty-navigator",
-  pin = true,
-  build = "cp ./*.py ~/.config/kitty/",
-}
-
-local go_to_preview = {
-  "rmagatti/goto-preview",
-  pin = true,
-  dependencies = { { "rmagatti/logger.nvim", pin = true } },
-  event = "BufEnter",
-  config = function()
-    require("goto-preview").setup({})
-
-    vim.keymap.set(
-      "n",
-      "gpd",
-      "<cmd>lua require('goto-preview').goto_preview_definition()<CR>",
-      { desc = "Preview definition" }
-    )
-    vim.keymap.set(
-      "n",
-      "gpt",
-      "<cmd>lua require('goto-preview').goto_preview_type_definition()<CR>",
-      { desc = "Preview type definition" }
-    )
-    vim.keymap.set(
-      "n",
-      "gpi",
-      "<cmd>lua require('goto-preview').goto_preview_implementation()<CR>",
-      { desc = "Preview implementation" }
-    )
-    vim.keymap.set(
-      "n",
-      "gpD",
-      "<cmd>lua require('goto-preview').goto_preview_declaration()<CR>",
-      { desc = "Preview declaration" }
-    )
-    vim.keymap.set(
-      "n",
-      "gP",
-      "<cmd>lua require('goto-preview').close_all_win()<CR>",
-      { desc = "Close all preview windows" }
-    )
-    vim.keymap.set(
-      "n",
-      "gpr",
-      "<cmd>lua require('goto-preview').goto_preview_references()<CR>",
-      { desc = "Preview references" }
-    )
-  end,
-}
 local better_messages_buffer = {
+  -- overall better messages buffer (auto-update, normal buffer behaviour etc.)
   "ariel-frischer/bmessages.nvim",
   pin = true,
   event = "CmdlineEnter",
@@ -378,8 +227,6 @@ return {
   highlight_matching_parenthesis,
   progress_and_notify_ui,
   scrolloff_eof,
-  zen_ui,
   -- kitty_integration, -- disabled for now for conflicts with <C-k> etc. keymaps
-  go_to_preview,
   better_messages_buffer,
 }

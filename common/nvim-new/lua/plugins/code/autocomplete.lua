@@ -31,7 +31,7 @@ local lua_snip = {
   },
 }
 
-return {
+local nvim_cmp = {
   "hrsh7th/nvim-cmp",
   pin = true,
   dependencies = {
@@ -132,4 +132,10 @@ return {
       },
     })
   end,
+}
+
+return {
+  -- TODO: properly setup lua_snip so that it takes precedence
+  lua_snip,
+  nvim_cmp,
 }

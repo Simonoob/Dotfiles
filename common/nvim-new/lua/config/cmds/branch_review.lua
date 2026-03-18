@@ -331,6 +331,13 @@ end
 
 -- ─── Review lifecycle ────────────────────────────────────────────────────────
 
+local function reset_integrations()
+  require("gitsigns").reset_base("global")
+  -- require("gitsigns").toggle_word_diff()
+  vim.cmd("Trouble qflist close")
+  vim.fn.setqflist({}, "r")
+end
+
 local function start_review_mode()
   if M.enabled then
     vim.notify("Review mode is already ongoing", vim.log.levels.WARN)
@@ -361,7 +368,7 @@ local function start_review_mode()
         M.hunks = get_modified_chunks(selected_branch)
 
         set_gitsigns_base()
-        require("gitsigns").toggle_word_diff()
+        -- require("gitsigns").toggle_word_diff()
 
         open_file_picker()
       end)
@@ -375,10 +382,7 @@ local function stop_review_mode(force)
     return
   end
 
-  require("gitsigns").reset_base("global")
-  require("gitsigns").toggle_word_diff()
-  vim.cmd("Trouble qflist close")
-  vim.fn.setqflist({}, "r")
+  reset_integrations()
 
   M.enabled = false
   M.comparison_branch = nil
@@ -405,40 +409,27 @@ end
 
 -- ─── Command & keymaps ───────────────────────────────────────────────────────
 
-local valid_commands = { "start", "stop", "files", "hunksToQfixList" }
+local commands = {
+  start = start_review_mode,
+  stop = stop_review_mode,
+  files = open_file_picker,
+  hunksToQfixList = add_hunks_to_quickfix,
+}
 
 vim.api.nvim_create_user_command("BranchReview", function(opts)
-  local cmd = opts.args
-  if not vim.tbl_contains(valid_commands, cmd) then
-    vim.notify("Invalid command. Valid: " .. vim.inspect(valid_commands), vim.log.levels.ERROR)
+  local handler = commands[opts.args]
+  if not handler then
+    vim.notify("Invalid command. Valid: " .. vim.inspect(vim.tbl_keys(commands)), vim.log.levels.ERROR)
     return
   end
-
-  if cmd == "start" then
-    start_review_mode()
-  elseif cmd == "stop" then
-    stop_review_mode()
-  elseif cmd == "files" then
-    open_file_picker()
-  elseif cmd == "hunksToQfixList" then
-    add_hunks_to_quickfix()
-  end
+  handler()
 end, {
   nargs = 1,
   desc = "Git branch review mode",
   complete = function(ArgLead, CmdLine)
-    for _, cmd in ipairs(valid_commands) do
-      if CmdLine:match(cmd) then
-        return {}
-      end
-    end
-    local matches = {}
-    for _, cmd in ipairs(valid_commands) do
-      if cmd:match("^" .. ArgLead) then
-        table.insert(matches, cmd)
-      end
-    end
-    return matches
+    return vim.tbl_filter(function(cmd)
+      return not CmdLine:match(cmd) and cmd:match("^" .. ArgLead)
+    end, vim.tbl_keys(commands))
   end,
 })
 

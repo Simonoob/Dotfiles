@@ -1,5 +1,6 @@
 return {
   -- clipboard managment with telescope integration
+  -- remember the last clipboard copies
   "AckslD/nvim-neoclip.lua",
   pin = true,
   dependencies = {

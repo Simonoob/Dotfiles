@@ -13,6 +13,7 @@ local auto_pairs = {
     cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
   end,
 }
+
 local auto_pair_html_tags = {
   "windwp/nvim-ts-autotag",
   pin = true,
@@ -41,28 +42,8 @@ local auto_detect_tabs = {
   pin = true,
 }
 
-local inc_rename = {
-  "smjonas/inc-rename.nvim",
-  pin = true,
-  config = function()
-    require("inc_rename").setup()
-  end,
-  keys = {
-    {
-      mode = { "n" },
-      "<leader>cR",
-      function()
-        return ":IncRename " .. vim.fn.expand("<cword>")
-      end,
-      expr = true,
-      desc = "Rename (inc-rename.nvim)",
-    },
-  },
-}
-
 return {
   auto_detect_tabs,
   auto_pairs,
   auto_pair_html_tags,
-  inc_rename,
 }
