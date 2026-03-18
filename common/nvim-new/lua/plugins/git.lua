@@ -63,27 +63,8 @@ local gitsigns = {
   },
 }
 
-local lazygit = {
-  "kdheepak/lazygit.nvim",
-  pin = true,
-  lazy = true,
-  cmd = {
-    "LazyGit",
-    "LazyGitConfig",
-    "LazyGitCurrentFile",
-    "LazyGitFilter",
-    "LazyGitFilterCurrentFile",
-  },
-  -- optional for floating window border decoration
-  dependencies = {
-    { "nvim-lua/plenary.nvim", pin = true },
-  },
-  -- setting the keybinding for LazyGit with 'keys' is recommended in
-  -- order to load the plugin when the command is run for the first time
-  keys = {
-    { "<leader>gg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
-  },
-}
+-- open lazygit in terminal
+vim.keymap.set("n", "<leader>gg", "<Esc>:vsplit<CR><Esc>:terminal<CR>ilazygit<CR>", { desc = "LazyGit" })
 
 local advancedGitSearch = {
   "aaronhallaert/advanced-git-search.nvim",
@@ -132,7 +113,7 @@ local openInGithub = {
 
 return {
   gitsigns,
-  lazygit,
+  -- lazygit,
   advancedGitSearch,
   openInGithub,
 }
