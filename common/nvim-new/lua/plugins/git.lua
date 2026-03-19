@@ -64,7 +64,13 @@ local gitsigns = {
 }
 
 -- open lazygit in terminal
-vim.keymap.set("n", "<leader>gg", "<Esc>140:vsplit<CR><Esc>:terminal<CR>ilazygit<CR>", { desc = "LazyGit" })
+vim.keymap.set("n", "<leader>gg", function()
+  local width = math.floor(vim.o.columns * 0.8)
+  width = math.max(80, math.min(200, width))
+  vim.cmd(width .. "vsplit")
+  vim.cmd("terminal lazygit")
+  vim.cmd("startinsert")
+end, { desc = "LazyGit" })
 
 local advancedGitSearch = {
   "aaronhallaert/advanced-git-search.nvim",
