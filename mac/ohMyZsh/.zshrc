@@ -153,6 +153,10 @@ export PATH="/Users/simonoob/.asdf/installs/poetry/2.1.1/bin:$PATH"
 
 # The next line enables shell command completion for gcloud.
 # if [ -f '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc' ]; then . '/Users/simonoob/Downloads/google-cloud-sdk 2/completion.zsh.inc'; fi
+#
+# add gcloud components to PATH
+source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 
 
 alias work="timer 40m && say 'time for a break' \
@@ -180,7 +184,7 @@ pomo(){
 
 # add doom emacs to the PATH
 export PATH=$HOME/.config/emacs/bin:$PATH
-alias emacs="emacsclient -c -a=''"
+# alias emacs="emacsclient -c -a=''"
 
 
 # package manager for kubectl
@@ -194,3 +198,9 @@ for zsh users
 
 
 alias get-ip-wifi='ipconfig getaddr en0'
+eval "$(~/.local/bin/mise activate)"
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+# init zoxide and switch cd to it
+eval "$(zoxide init zsh --cmd cd)"
