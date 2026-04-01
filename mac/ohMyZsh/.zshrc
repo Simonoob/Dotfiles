@@ -204,3 +204,9 @@ eval "$(~/.local/bin/mise activate)"
 
 # init zoxide and switch cd to it
 eval "$(zoxide init zsh --cmd cd)"
+
+# set eza as a replacement for ls
+alias ls="eza"
+
+# alias to reload zsh config
+alias source-zsh="source ~/.zshrc"
