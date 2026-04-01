@@ -28,6 +28,10 @@ local function setup_basic_lsp_keymaps(event, client)
 end
 
 local function setup_highlight_cursor_references(event, client)
+  if not client or not client.supports_method("textDocument/documentHighlight") then
+    return
+  end
+
   -- The following two autocommands are used to highlight references of the
   -- word under your cursor when your cursor rests there for a little while.
   --    See `:help CursorHold` for information about when this is executed
@@ -45,7 +49,6 @@ local function setup_highlight_cursor_references(event, client)
   vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
     buffer = event.buf,
     group = highlight_augroup,
-
     callback = vim.lsp.buf.clear_references,
   })
 
